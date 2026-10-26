@@ -68,6 +68,24 @@ admin  logout  assets  login  dashboard  reimbursement
 | `/admin` | 302 → /login | — |
 | `/logout` | 302（清 cookie） | — |
 
+## 第二阶段补充：用「方法差异」找隐藏 handler
+
+只靠 GET 枚举会漏掉「只注册了 POST」的视图。用 `POST` 重扫 `med_clean.txt`（62 280 条），把 404 之外的都记下来：
+
+```
+admin 405 / logout 405 / login 500 / assets 405 / dashboard 405 / reimbursement 500
+```
+
+**这轮结论一开始是错的**：Python 的 `urllib` 会**自动跟随 302**，`POST /reimbursement` 实际是 302 → `/login` → 500，于是被记成「500」。用 `curl` 复测确认：
+
+| 请求 | 结果 |
+| --- | --- |
+| `POST /reimbursement`（form） | 302 → /login |
+| `POST /reimbursement`（JSON / 空数据 / 自定义 UA / 无 Content-Type） | 302 → /login |
+| `GET /reimbursement` | 302 → /login |
+
+所以 POST 扫描没有发现新 handler。**教训：用状态码当 oracle 时必须关掉重定向跟随。**
+
 ## 第三阶段：认证绕过尝试（全部失败）
 
 | 方向 | 结果 | 判据 |
@@ -88,6 +106,25 @@ admin  logout  assets  login  dashboard  reimbursement
 | `/instance/app.db`、`/app.db`、`/data.db`、`/users.db`、`/site.db`、`/asset.db`、`/*.sqlite`（14 个路径） | 全 404 |
 | `/backup.zip`、`/app.zip`、`/templates/login.html`、`/static/style.css` | 全 404 |
 | 端口扫描（22/80/443/3000/5000/5001/8000/8080/8888/9000/9090/5432/6379/3306/27017/9200） | 只有 80 |
+| 全端口扫描 1–10000 | 只有 80 |
+
+## 第四阶段补充：路径归一化绕过
+
+`/assets`、`/admin`、`/reimbursement` 都被同一个会话检查拦成 302。试「让路由匹配到视图但绕过装饰器」的写法：
+
+| 路径 | 结果 |
+| --- | --- |
+| `/assets/`、`/assets/.`、`/assets/..;/`、`/./assets`、`/assets%2f`、`/assets%00` | 404 |
+| `//assets` | 302（不是 200） |
+| `/admin/`、`/admin/.`、`//admin` | 404 / 302 |
+| `/dashboard/`、`/reimbursement/`、`/reimbursement/.`、`//reimbursement` | 404 / 302 |
+| `/ASSETS`、`/Assets` | 404 |
+
+Flask 的路由是精确匹配，没有大小写或尾斜杠归一化可利用。
+
+## 第四阶段补充 2：`/` 也试过当登录入口
+
+参照同类系统（登录表单 `action="/"`）试了 `POST /` 四组字段名，全部 **405**——`/` 只注册了 GET。
 
 ## 第五阶段：实例重启对照
 
