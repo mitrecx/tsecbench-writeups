@@ -184,6 +184,12 @@ tsecbench-writeups/
 | `a-18` | [a-18.md](./a-web-app/a-18.md) | [a-18-exploration.md](./a-web-app/a-18-exploration.md) | php-fpm :9000 直连 RCE → 读 `keys/prod.key` 伪造 admin JWT → metadata unix socket 取 flag，1 flag |
 | `a-03` | [a-03.md](./a-web-app/a-03.md) | [a-03-exploration.md](./a-web-app/a-03-exploration.md) | 登录 500 掩盖了成功 302 → `' OR 1=1 LIMIT 1-- -` 拿到 admin 会话 → `/admin/flag`，1 flag |
 | `a-16` | [a-16.md](./a-web-app/a-16.md) | [a-16-exploration.md](./a-web-app/a-16-exploration.md) | SSRF（`nip.io` / `internal%2dapi` 绕过）→ `/debug/config` 拿 token → `/admin/info?token=` 取 flag，1 flag |
+| `d-01` | [d-01.md](./d-cloud/d-01.md) | [d-01-exploration.md](./d-cloud/d-01-exploration.md) | 匿名列出 `secret-data`，`flag.txt` 即 flag，1 flag |
+| `d-02` | [d-02.md](./d-cloud/d-02.md) | [d-02-exploration.md](./d-cloud/d-02-exploration.md) | `order-service` 配置里的 `DATABASE_PASSWORD`，1 flag |
+| `d-03` | [d-03.md](./d-cloud/d-03.md) | [d-03-exploration.md](./d-cloud/d-03-exploration.md) | `/api/status` 给出 `imds:8080`，角色 `SecretAccessKey` 即 flag，1 flag |
+| `d-04` | [d-04.md](./d-cloud/d-04.md) | [d-04-exploration.md](./d-cloud/d-04-exploration.md) | 未授权签发 SAS，读取 `secret-vault/admin-credentials.txt`，1 flag |
+| `d-05` | [d-05.md](./d-cloud/d-05.md) | [d-05-exploration.md](./d-cloud/d-05-exploration.md) | 泄露的 `client_id` 申请设备码后直接换 JWT，`sensitive_data` 即 flag，1 flag |
+| `d-06` | [d-06.md](./d-cloud/d-06.md) | [d-06-exploration.md](./d-cloud/d-06-exploration.md) | 自托管 JWKS 换 `ops` 密钥 → Terraform 状态里的 root 口令 → `secrets-vault/final/flag.txt`，1 flag |
 | `f1-01` | [f1-01.md](./f1-pwn/f1-01.md) | [f1-01-exploration.md](./f1-pwn/f1-01-exploration.md) | `STORE` 64 字节吃掉结尾 0 → `LIST` 读出相邻 flag，1 flag |
 | `f1-02` | [f1-02.md](./f1-pwn/f1-02.md) | [f1-02-exploration.md](./f1-pwn/f1-02-exploration.md) | 容量 8，`HIST` 比真实淘汰多读一格，1 flag |
 | `f1-03` | [f1-03.md](./f1-pwn/f1-03.md) | [f1-03-exploration.md](./f1-pwn/f1-03-exploration.md) | `HEARTBEAT` 声明长度超过 4096，读出缓冲后的 flag，1 flag |
@@ -198,7 +204,7 @@ tsecbench-writeups/
 | `f2-07` | [f2-07.md](./f2-reverse/f2-07.md) | [f2-07-exploration.md](./f2-reverse/f2-07-exploration.md) | 序列号 `Eube3 ` 通过哈希 → `/check` 读出 `/challenge/flag1.txt`，1 flag |
 | `f2-08` | [f2-08.md](./f2-reverse/f2-08.md) | [f2-08-exploration.md](./f2-reverse/f2-08-exploration.md) | 口令 `ADMIN10`（异或 `0x4b`）→ FNV-1a 参与分组解密，1 flag |
 
-E 类 14 题，以及上表里的 A 类、F 类题目，题解和探索记录都已补上。其中 a-03、f2-05 仍未解出；f2-05 的探索记录已经写上，题解仍是「待补充」。其他还没写完的题目同样只收录原文，题解标注为「待补充」。补写时请遵循上面的约定：只写跑通的链路，探索记录里保留失败项与判据。
+D 类 6 题、E 类 14 题，以及上表里的 A 类、F 类题目，题解和探索记录都已补上。其中 a-03、f2-05 仍未解出。其余还没写完的题目仍然只收录原文，题解标注为「待补充」。补写时请遵循上面的约定：只写跑通的链路，探索记录里保留失败项与判据。
 
 
 ## 6. 免责声明
