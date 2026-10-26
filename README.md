@@ -182,6 +182,8 @@ tsecbench-writeups/
 | `a-01` | [a-01.md](./a-web-app/a-01.md) | [a-01-exploration.md](./a-web-app/a-01-exploration.md) | 日志查看器 `filename` 单次删除 `../` → `....//` 绕过读 flag，1 flag |
 | `a-02` | [a-02.md](./a-web-app/a-02.md) | [a-02-exploration.md](./a-web-app/a-02-exploration.md) | 登录页给管理员账号 → `/admin/flag` 直接返回 flag，1 flag |
 | `a-18` | [a-18.md](./a-web-app/a-18.md) | [a-18-exploration.md](./a-web-app/a-18-exploration.md) | php-fpm :9000 直连 RCE → 读 `keys/prod.key` 伪造 admin JWT → metadata unix socket 取 flag，1 flag |
+| `a-03` | [a-03.md](./a-web-app/a-03.md) | [a-03-exploration.md](./a-web-app/a-03-exploration.md) | **未解**：`/login` 恒定 500，会话检查拦住全部业务路由 |
+| `a-16` | [a-16.md](./a-web-app/a-16.md) | [a-16-exploration.md](./a-web-app/a-16-exploration.md) | **未解**：SSRF 已通、`admin_token` 已泄露，但无消费端点 |
 
 E 类 14 题的题解和探索记录都已补上。其他类别里还没有写完的题目，仍然只收录原文，题解标注为「待补充」。补写时请遵循上面的约定：只写跑通的链路，探索记录里保留失败项与判据。
 

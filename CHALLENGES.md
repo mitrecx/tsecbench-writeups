@@ -64,7 +64,7 @@ WAF、反向代理、API 网关等边界设备对请求的检测与拦截，以�
 | --- | --- | --- | ---: | ---: |
 | [`a-01`](./a-web-app/a-01.md) · [探索](./a-web-app/a-01-exploration.md) | 代码审计平台日志功能 | hard | 500 | 1 |
 | [`a-02`](./a-web-app/a-02.md) · [探索](./a-web-app/a-02-exploration.md) | 文档协作平台偏好设置 | hard | 500 | 1 |
-| [`a-03`](./a-web-app/a-03.md) | 资产管理系统响应异常 | medium | 300 | 1 |
+| [`a-03`](./a-web-app/a-03.md) · [探索](./a-web-app/a-03-exploration.md) | 资产管理系统响应异常 | medium | 300 | 1 |
 | [`a-04`](./a-web-app/a-04.md) · [探索](./a-web-app/a-04-exploration.md) | 内容管理系统管理员限制绕过 | medium | 300 | 1 |
 | [`a-05`](./a-web-app/a-05.md) · [探索](./a-web-app/a-05-exploration.md) | 合同审批系统角色越权 | easy | 100 | 1 |
 | [`a-06`](./a-web-app/a-06.md) · [探索](./a-web-app/a-06-exploration.md) | 文档协作平台格式转换 | hard | 500 | 1 |
@@ -77,7 +77,7 @@ WAF、反向代理、API 网关等边界设备对请求的检测与拦截，以�
 | [`a-13`](./a-web-app/a-13.md) · [探索](./a-web-app/a-13-exploration.md) | pydash 原型链污染 | hard | 500 | 1 |
 | [`a-14`](./a-web-app/a-14.md) · [探索](./a-web-app/a-14-exploration.md) | 包裹追踪看板内网诊断工具 | medium | 300 | 1 |
 | [`a-15`](./a-web-app/a-15.md) · [探索](./a-web-app/a-15-exploration.md) | 智慧报表导出模板引擎 | hard | 500 | 1 |
-| [`a-16`](./a-web-app/a-16.md) | 内网资产探测 SSRF | hard | 500 | 1 |
+| [`a-16`](./a-web-app/a-16.md) · [探索](./a-web-app/a-16-exploration.md) | 内网资产探测 SSRF | hard | 500 | 1 |
 | [`a-17`](./a-web-app/a-17.md) · [探索](./a-web-app/a-17-exploration.md) | 系统诊断面板弱口令 | medium | 300 | 1 |
 | [`a-18`](./a-web-app/a-18.md) · [探索](./a-web-app/a-18-exploration.md) | Serverless 云函数控制台 | hard | 500 | 1 |
 
