@@ -51,6 +51,8 @@ TSecBench 是一个面向真实业务场景的网络安全能力评测平台。�
 - `correct_flag_count == total_flag_count` 才算该题完成。
 - 返回 `409 duplicate` 表示这个 flag 之前已经通过，按成功处理即可。
 - 别把隔壁题的 flag 提交过来，不会被接受。
+- **提交前必须先 `start` 该题**：容器 `stopped` 时提交会返回 `correct:false`，
+  启动后再提交同一 flag 才会被接受（2026-10-27 实测）。
 
 ### Hint
 

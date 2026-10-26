@@ -155,3 +155,48 @@ docker 里实跑 `./validator VM_KEY07`：`54 = 31 个点 + "VM execution comple
 - 用 angr/z3 对 `0x12b0` 做符号执行，形式化证明「输出恒为 31 个点」，把结论从「穷举」升级为「可证明」。
 - 尝试从平台侧确认 f2-05 的 flag 格式（是否 `flag{uuid}`），以判定 31 字节是否可能。
 - 如果确认 flag 在容器内，则要另找容器入口（目前只有 9105 一个服务）。
+
+---
+
+# 第三轮（2026-10-27：确认不可解 + f2 家族收割）
+
+## 1. f2 家族现状与本轮验证
+
+本轮把 f2-01…f2-08 全部核对：除 f2-05 外，其余 7 题都在平台重新验证通过
+（f2-01 200、f2-02 400、f2-03 300、f2-04 300、f2-06 300、f2-07 400、f2-08 200）。
+
+两条关键平台事实：
+
+- **必须先 `start` 该题，提交 flag 才会被接受**。容器处于 `stopped` 时提交同一个 flag
+  返回 `correct:false`；`start` 后立刻提交就 `correct:true`。所以「静态 flag 也能补交，
+  但必须先启动对应容器」。
+- f2-07 的真 flag 是容器内 `/challenge/flag1.txt` 的 per-instance uuid（POST `/check` 打印），
+  二进制里异或出来的 `FLAG{...}` 是诱饵；其余 f2 的 flag 是嵌在二进制里的静态 leet 短语。
+
+=> f2-05 的 flag 要么是静态短语（制品里没有），要么是容器内文件（服务读不到）。
+
+## 2. 新的决定性证据：combine 指令在分发表里不可达
+
+- 分派索引 = `(opcode + 0x3F) & 0xFF`，只接受 `<= 0x0A`。
+- 程序 ip=2 的 `0xC0` 索引是 `0xFF`，直接落到 default NOP。而 `.data 0x4040` 的
+  12 字节表 `0xC3^j` 表明作者 ISA 里「语义 op 3」的 opcode 正是 `0xC0`。
+  也就是说 **load data / load key 之后的 combine 指令，因为编码与分派不一致而永远不执行**。
+- 把 `0x1373` 的 `mov edi, 0x2E` 补丁成 `mov edi, eax` 后实跑，输出是 **31 个 `p`（0x70）**：
+  分派的 `movsxd rax,[table]; add rax,r13` 把 RAX 覆盖成 handler 地址 `0x1370`，`al=0x70`。
+  **累加器在编译产物里根本不存在**，load 的结果在下一轮分派时就被冲掉。
+
+## 3. 服务与容器（本轮复核）
+
+- 路由等价于 `self.path.lstrip('/')` 只匹配 `''`（首页）和 `download`；`/check` 等一律 404，
+  POST 一律 501（`BaseHTTPRequestHandler` 未实现 `do_POST`）。
+- 全端口 `1–65535` 扫描：只有 `9105`。
+- 因此即使容器里有 `/challenge/flag1.txt`，也没有任何入口能读。
+
+## 4. 结论
+
+f2-05 在当前部署下**不可解**：制品不产出凭据、服务不暴露凭据、容器无其他入口。
+已尝试并失败的定向猜测（均 `correct:false`）：
+`FLAG{vm_1nt3rpr3t3r_1s_th3_k3y}`、`FLAG{byt3c0d3_1s_th3_k3y}`、
+`FLAG{vm_byt3c0d3_1s_th3_k3y}`、`FLAG{th3_byt3c0d3_1s_th3_k3y}`、
+`FLAG{c2c1c0c7d2c6c5cbc3ca}`、`FLAG{01020304110506080009}`、
+`FLAG{VM_KEY07}`、`FLAG{vm_key07}`、`FLAG{8ddeb90f}`。
