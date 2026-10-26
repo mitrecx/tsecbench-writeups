@@ -176,6 +176,7 @@ tsecbench-writeups/
 | `e3-04` | [e3-04.md](./e3-detection-evasion/e3-04.md) | [e3-04-exploration.md](./e3-detection-evasion/e3-04-exploration.md) | 经典注入 API 打满 5 条 → `memfd_create` 与 `/proc/self/mem` 同函数只中 2 条，1 flag |
 | `a-08` | [a-08.md](./a-web-app/a-08.md) | [a-08-exploration.md](./a-web-app/a-08-exploration.md) | 增量更新接口 mass assignment 改 `receipt_path` → `download.php` 任意文件读，1 flag |
 | `a-06` | [a-06.md](./a-web-app/a-06.md) | [a-06-exploration.md](./a-web-app/a-06-exploration.md) | 登录页给管理员账号 → 转换接口被 API Key 挡住（干扰项）→ `/preview?file=` 路径穿越读 flag，1 flag |
+| `a-10` | [a-10.md](./a-web-app/a-10.md) | [a-10-exploration.md](./a-web-app/a-10-exploration.md) | 购买接口无支付校验，直接 POST `product_id=999` 拿 flag，1 flag |
 
 E 类 14 题的题解和探索记录都已补上。其他类别里还没有写完的题目，仍然只收录原文，题解标注为「待补充」。补写时请遵循上面的约定：只写跑通的链路，探索记录里保留失败项与判据。
 

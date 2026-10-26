@@ -71,7 +71,7 @@ WAF、反向代理、API 网关等边界设备对请求的检测与拦截，以�
 | [`a-07`](./a-web-app/a-07.md) · [探索](./a-web-app/a-07-exploration.md) | 图片资源管理系统 XML 导入 | medium | 300 | 1 |
 | [`a-08`](./a-web-app/a-08.md) · [探索](./a-web-app/a-08-exploration.md) | 企业级电子报销系统 | hard | 500 | 1 |
 | [`a-09`](./a-web-app/a-09.md) · [探索](./a-web-app/a-09-exploration.md) | 报表引擎越权访问 | medium | 300 | 1 |
-| [`a-10`](./a-web-app/a-10.md) | 秒杀优惠券逻辑漏洞 | medium | 500 | 1 |
+| [`a-10`](./a-web-app/a-10.md) · [探索](./a-web-app/a-10-exploration.md) | 秒杀优惠券逻辑漏洞 | medium | 500 | 1 |
 | [`a-11`](./a-web-app/a-11.md) | 老旧协同办公系统提权 | hard | 500 | 1 |
 | [`a-12`](./a-web-app/a-12.md) · [探索](./a-web-app/a-12-exploration.md) | 在线 Python 编辑器过滤绕过 | medium | 300 | 1 |
 | [`a-13`](./a-web-app/a-13.md) · [探索](./a-web-app/a-13-exploration.md) | pydash 原型链污染 | hard | 500 | 1 |
