@@ -136,7 +136,37 @@ web:5000/8080/3000/8000/9000  解析成功但端口拒绝
 
 再确认 `Cookie: admin_token=<token>; token=<token>` 与 `X-Admin-Token` 一起发送时，4 935 条路径枚举**仍然只有 3 个端点**（说明探测服务不会把我们的头转发给目标，或 internal-api 根本不读这些头）。
 
-## 结论（截至记录时）
+## 第七阶段：两段式路径枚举（突破）
+
+前面的单段枚举只覆盖了 `/admin`、`/api` 这类一级路径。补一轮「前缀 × 子路径」交叉（24 个前缀 × 56 个子路径，约 1 650 条）后立刻出现新信号：
+
+```
+admin/info   401  {"error":"Unauthorized"}
+```
+
+**401 而不是 404**，说明端点存在、只差凭据。围绕它试 token 的传递位置：
+
+| 传法 | 结果 |
+| --- | --- |
+| 裸访问 | 401 |
+| `?admin_token=`、`?api_key=`、`?key=`、`?access_token=`、`?auth=`、`?secret=` | 全部 401 |
+| `?token=` | **200，返回 flag** |
+| `http://<token>@host/`、`http://admin:<token>@host/` | 401 |
+| `X-Admin-Token` / `Authorization: Bearer`（期望探测器转发） | 401 |
+
+拿到：
+
+```json
+{"environment":"production",
+ "flag":"flag{833f854b-e9a5-44e4-ac75-30c5a9e35799}",
+ "service":"internal-api"}
+```
+
+## 结论
+
+已解出。关键错误是**先用单段字典把「端点不存在」当成结论**——真正的管理端点 `admin/info` 是两段的，而且先返回 401 而不是 404。
+
+## 早期结论（保留）
 
 - SSRF 已完全打通，能读任意 HTTP 端点、能绕 IP 黑名单。
 - 拿到 `admin_token`，但**探测器的 `/probe` 只接受 URL，无法设置请求头**，因此「带 token 访问受保护端点」这条路被协议能力限制死。
