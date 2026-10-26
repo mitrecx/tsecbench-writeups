@@ -184,8 +184,21 @@ tsecbench-writeups/
 | `a-18` | [a-18.md](./a-web-app/a-18.md) | [a-18-exploration.md](./a-web-app/a-18-exploration.md) | php-fpm :9000 直连 RCE → 读 `keys/prod.key` 伪造 admin JWT → metadata unix socket 取 flag，1 flag |
 | `a-03` | [a-03.md](./a-web-app/a-03.md) | [a-03-exploration.md](./a-web-app/a-03-exploration.md) | **未解**：`/login` 恒定 500，会话检查拦住全部业务路由 |
 | `a-16` | [a-16.md](./a-web-app/a-16.md) | [a-16-exploration.md](./a-web-app/a-16-exploration.md) | **未解**：SSRF 已通、`admin_token` 已泄露，但无消费端点 |
+| `f1-01` | [f1-01.md](./f1-pwn/f1-01.md) | [f1-01-exploration.md](./f1-pwn/f1-01-exploration.md) | `STORE` 64 字节吃掉结尾 0 → `LIST` 读出相邻 flag，1 flag |
+| `f1-02` | [f1-02.md](./f1-pwn/f1-02.md) | [f1-02-exploration.md](./f1-pwn/f1-02-exploration.md) | 容量 8，`HIST` 比真实淘汰多读一格，1 flag |
+| `f1-03` | [f1-03.md](./f1-pwn/f1-03.md) | [f1-03-exploration.md](./f1-pwn/f1-03-exploration.md) | `HEARTBEAT` 声明长度超过 4096，读出缓冲后的 flag，1 flag |
+| `f1-04` | [f1-04.md](./f1-pwn/f1-04.md) | [f1-04-exploration.md](./f1-pwn/f1-04-exploration.md) | `BUILD` 把 `hdrtab` 后面的相邻内存一并打出，1 flag |
+| `f1-05` | [f1-05.md](./f1-pwn/f1-05.md) | [f1-05-exploration.md](./f1-pwn/f1-05-exploration.md) | 正偏移停在 1024 → `COPY -1` 写坏前置守卫 → `REVEAL`，1 flag |
+| `f2-01` | [f2-01.md](./f2-reverse/f2-01.md) | [f2-01-exploration.md](./f2-reverse/f2-01-exploration.md) | 状态机从 `FLAG{` 反推许可证 `!# !##!"!`，1 flag |
+| `f2-02` | [f2-02.md](./f2-reverse/f2-02.md) | [f2-02-exploration.md](./f2-reverse/f2-02-exploration.md) | 三段拼成 `NESTED-RC4-KEY`，RC4 解开 `0x4020`，1 flag |
+| `f2-03` | [f2-03.md](./f2-reverse/f2-03.md) | [f2-03-exploration.md](./f2-03-exploration.md) | 口令 `Tiandun2024!` 推出密钥流，桩代码再异或 `0xa5`，1 flag |
+| `f2-04` | [f2-04.md](./f2-reverse/f2-04.md) | [f2-04-exploration.md](./f2-reverse/f2-04-exploration.md) | 33 字节命令做 6 轮 rol/add/xor，逆运算得到 flag，1 flag |
+| `f2-06` | [f2-06.md](./f2-reverse/f2-06.md) | [f2-06-exploration.md](./f2-reverse/f2-06-exploration.md) | 许可证 `GOLANG-2024-KEY`，接口表上的异或、S 盒、右旋，1 flag |
+| `f2-07` | [f2-07.md](./f2-reverse/f2-07.md) | [f2-07-exploration.md](./f2-reverse/f2-07-exploration.md) | 序列号 `Eube3 ` 通过哈希 → `/check` 读出 `/challenge/flag1.txt`，1 flag |
+| `f2-08` | [f2-08.md](./f2-reverse/f2-08.md) | [f2-08-exploration.md](./f2-reverse/f2-08-exploration.md) | 口令 `ADMIN10`（异或 `0x4b`）→ FNV-1a 参与分组解密，1 flag |
 
-E 类 14 题的题解和探索记录都已补上。其他类别里还没有写完的题目，仍然只收录原文，题解标注为「待补充」。补写时请遵循上面的约定：只写跑通的链路，探索记录里保留失败项与判据。
+E 类 14 题，以及上表里的 A 类、F 类题目，题解和探索记录都已补上。其中 a-03、a-16 仍未解出，f2-05 仍然只收录原文。其他还没写完的题目同样只收录原文，题解标注为「待补充」。补写时请遵循上面的约定：只写跑通的链路，探索记录里保留失败项与判据。
+
 
 ## 6. 免责声明
 
