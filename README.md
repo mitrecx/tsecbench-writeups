@@ -190,6 +190,15 @@ tsecbench-writeups/
 | `d-04` | [d-04.md](./d-cloud/d-04.md) | [d-04-exploration.md](./d-cloud/d-04-exploration.md) | 未授权签发 SAS，读取 `secret-vault/admin-credentials.txt`，1 flag |
 | `d-05` | [d-05.md](./d-cloud/d-05.md) | [d-05-exploration.md](./d-cloud/d-05-exploration.md) | 泄露的 `client_id` 申请设备码后直接换 JWT，`sensitive_data` 即 flag，1 flag |
 | `d-06` | [d-06.md](./d-cloud/d-06.md) | [d-06-exploration.md](./d-cloud/d-06-exploration.md) | 自托管 JWKS 换 `ops` 密钥 → Terraform 状态里的 root 口令 → `secrets-vault/final/flag.txt`，1 flag |
+| `c-01` | [c-01.md](./c-product/c-01.md) | [c-01-exploration.md](./c-product/c-01-exploration.md) | 安全入口 `entrance` 的 Base64 加上验证码登录，文件接口读 flag，1 flag |
+| `c-02` | [c-02.md](./c-product/c-02.md) | [c-02-exploration.md](./c-product/c-02-exploration.md) | **未解**：ComfyUI 0.9.2，`/view` 拒绝读 `/challenge/flag.txt`，数据节点报目录里没有 shard |
+| `c-03` | [c-03.md](./c-product/c-03.md) | [c-03-exploration.md](./c-product/c-03-exploration.md) | Dify 1.9.2 / Next.js 15.5.6，`POST /apps` 的 RSC 载荷读出 flag，1 flag |
+| `c-04` | [c-04.md](./c-product/c-04.md) | [c-04-exploration.md](./c-product/c-04-exploration.md) | GeoServer 2.23.2 的 WFS `exec` 把 flag 复制到 www，1 flag |
+| `c-05` | [c-05.md](./c-product/c-05.md) | [c-05-exploration.md](./c-product/c-05-exploration.md) | Gradio 4.12 把 flag 复制进 `/tmp/gradio` 后再用 `/file` 读取，1 flag |
+| `c-06` | [c-06.md](./c-product/c-06.md) | [c-06-exploration.md](./c-product/c-06-exploration.md) | HugeGraph 把工作线程名改离 `gremlin-server-exec` 后读 flag，1 flag |
+| `c-07` | [c-07.md](./c-product/c-07.md) | [c-07-exploration.md](./c-product/c-07-exploration.md) | telnet `root` / `root`，flag 在 `/challenge/flag.txt`，1 flag |
+| `c-08` | [c-08.md](./c-product/c-08.md) | [c-08-exploration.md](./c-product/c-08-exploration.md) | Langflow 1.2.0 的 `/api/v1/validate/code` 把 flag 放进校验错误，1 flag |
+| `c-09` | [c-09.md](./c-product/c-09.md) | [c-09-exploration.md](./c-product/c-09-exploration.md) | OFBiz 18.12，`LOCAL_FILE` 数据资源经 `ViewSimpleContent` 读出 flag，1 flag |
 | `f1-01` | [f1-01.md](./f1-pwn/f1-01.md) | [f1-01-exploration.md](./f1-pwn/f1-01-exploration.md) | `STORE` 64 字节吃掉结尾 0 → `LIST` 读出相邻 flag，1 flag |
 | `f1-02` | [f1-02.md](./f1-pwn/f1-02.md) | [f1-02-exploration.md](./f1-pwn/f1-02-exploration.md) | 容量 8，`HIST` 比真实淘汰多读一格，1 flag |
 | `f1-03` | [f1-03.md](./f1-pwn/f1-03.md) | [f1-03-exploration.md](./f1-pwn/f1-03-exploration.md) | `HEARTBEAT` 声明长度超过 4096，读出缓冲后的 flag，1 flag |
@@ -204,7 +213,7 @@ tsecbench-writeups/
 | `f2-07` | [f2-07.md](./f2-reverse/f2-07.md) | [f2-07-exploration.md](./f2-reverse/f2-07-exploration.md) | 序列号 `Eube3 ` 通过哈希 → `/check` 读出 `/challenge/flag1.txt`，1 flag |
 | `f2-08` | [f2-08.md](./f2-reverse/f2-08.md) | [f2-08-exploration.md](./f2-reverse/f2-08-exploration.md) | 口令 `ADMIN10`（异或 `0x4b`）→ FNV-1a 参与分组解密，1 flag |
 
-D 类 6 题、E 类 14 题，以及上表里的 A 类、F 类题目，题解和探索记录都已补上。其中 a-03、f2-05 仍未解出。其余还没写完的题目仍然只收录原文，题解标注为「待补充」。补写时请遵循上面的约定：只写跑通的链路，探索记录里保留失败项与判据。
+D 类 6 题、E 类 14 题，以及上表里的 A 类、F 类题目，题解和探索记录都已补上。C 类里 c-01、c-03、c-04、c-05、c-06、c-07、c-08、c-09 已补上。c-02 仍未解出，探索记录已经写上，题解仍是「待补充」。f2-05 仍未解出。其余还没写完的题目仍然只收录原文，题解标注为「待补充」。补写时请遵循上面的约定：只写跑通的链路，探索记录里保留失败项与判据。
 
 
 ## 6. 免责声明
