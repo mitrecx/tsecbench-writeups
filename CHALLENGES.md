@@ -62,8 +62,8 @@ WAF、反向代理、API 网关等边界设备对请求的检测与拦截，以�
 
 | 编号 | 题目 | 难度 | 分值 | Flag |
 | --- | --- | --- | ---: | ---: |
-| [`a-01`](./a-web-app/a-01.md) | 代码审计平台日志功能 | hard | 500 | 1 |
-| [`a-02`](./a-web-app/a-02.md) | 文档协作平台偏好设置 | hard | 500 | 1 |
+| [`a-01`](./a-web-app/a-01.md) · [探索](./a-web-app/a-01-exploration.md) | 代码审计平台日志功能 | hard | 500 | 1 |
+| [`a-02`](./a-web-app/a-02.md) · [探索](./a-web-app/a-02-exploration.md) | 文档协作平台偏好设置 | hard | 500 | 1 |
 | [`a-03`](./a-web-app/a-03.md) | 资产管理系统响应异常 | medium | 300 | 1 |
 | [`a-04`](./a-web-app/a-04.md) · [探索](./a-web-app/a-04-exploration.md) | 内容管理系统管理员限制绕过 | medium | 300 | 1 |
 | [`a-05`](./a-web-app/a-05.md) · [探索](./a-web-app/a-05-exploration.md) | 合同审批系统角色越权 | easy | 100 | 1 |

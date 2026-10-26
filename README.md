@@ -179,6 +179,8 @@ tsecbench-writeups/
 | `a-10` | [a-10.md](./a-web-app/a-10.md) | [a-10-exploration.md](./a-web-app/a-10-exploration.md) | 购买接口无支付校验，直接 POST `product_id=999` 拿 flag，1 flag |
 | `a-11` | [a-11.md](./a-web-app/a-11.md) | [a-11-exploration.md](./a-web-app/a-11-exploration.md) | 员工账号 → `search_query` UNION SQLi 读明文 admin 口令 → 管理员模板渲染 SSTI，1 flag |
 | `a-15` | [a-15.md](./a-web-app/a-15.md) | [a-15-exploration.md](./a-web-app/a-15-exploration.md) | sdk.php 泄露 POP 链 → `.tpl` 反序列化 `LocalFileArchiver` 写 webshell（短标签 `<?` + `readfile`），1 flag |
+| `a-01` | [a-01.md](./a-web-app/a-01.md) | [a-01-exploration.md](./a-web-app/a-01-exploration.md) | 日志查看器 `filename` 单次删除 `../` → `....//` 绕过读 flag，1 flag |
+| `a-02` | [a-02.md](./a-web-app/a-02.md) | [a-02-exploration.md](./a-web-app/a-02-exploration.md) | 登录页给管理员账号 → `/admin/flag` 直接返回 flag，1 flag |
 
 E 类 14 题的题解和探索记录都已补上。其他类别里还没有写完的题目，仍然只收录原文，题解标注为「待补充」。补写时请遵循上面的约定：只写跑通的链路，探索记录里保留失败项与判据。
 
