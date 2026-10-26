@@ -201,12 +201,12 @@ tsecbench-writeups/
 | `f2-02` | [f2-02.md](./f2-reverse/f2-02.md) | [f2-02-exploration.md](./f2-reverse/f2-02-exploration.md) | 三段拼成 `NESTED-RC4-KEY`，RC4 解开 `0x4020`，1 flag |
 | `f2-03` | [f2-03.md](./f2-reverse/f2-03.md) | [f2-03-exploration.md](./f2-03-exploration.md) | 口令 `Tiandun2024!` 推出密钥流，桩代码再异或 `0xa5`，1 flag |
 | `f2-04` | [f2-04.md](./f2-reverse/f2-04.md) | [f2-04-exploration.md](./f2-reverse/f2-04-exploration.md) | 33 字节命令做 6 轮 rol/add/xor，逆运算得到 flag，1 flag |
-| `f2-05` | [f2-05.md](./f2-reverse/f2-05.md) | [f2-05-exploration.md](./f2-reverse/f2-05-exploration.md) | **未解**：访问码 `VM_KEY07`，虚拟机只打印 31 个点，`0x4020` 的 31 字节尚未还原 |
+| `f2-05` | [f2-05.md](./f2-reverse/f2-05.md) | [f2-05-exploration.md](./f2-reverse/f2-05-exploration.md) | VM 是死代码（运算 opcode `0xC0` 分派越界）；字节码 `^0xC3` 解出参数 `0x11`/`3`，`ROR(blob^t0[i&3],3)-0x11`，1 flag |
 | `f2-06` | [f2-06.md](./f2-reverse/f2-06.md) | [f2-06-exploration.md](./f2-reverse/f2-06-exploration.md) | 许可证 `GOLANG-2024-KEY`，接口表上的异或、S 盒、右旋，1 flag |
 | `f2-07` | [f2-07.md](./f2-reverse/f2-07.md) | [f2-07-exploration.md](./f2-reverse/f2-07-exploration.md) | 序列号 `Eube3 ` 通过哈希 → `/check` 读出 `/challenge/flag1.txt`，1 flag |
 | `f2-08` | [f2-08.md](./f2-reverse/f2-08.md) | [f2-08-exploration.md](./f2-reverse/f2-08-exploration.md) | 口令 `ADMIN10`（异或 `0x4b`）→ FNV-1a 参与分组解密，1 flag |
 
-D 类 6 题、E 类 14 题，以及上表里的 A 类、F 类题目，题解和探索记录都已补上。其中 a-03、f2-05 仍未解出。其余还没写完的题目仍然只收录原文，题解标注为「待补充」。补写时请遵循上面的约定：只写跑通的链路，探索记录里保留失败项与判据。
+D 类 6 题、E 类 14 题，以及上表里的 A 类、F 类题目，题解和探索记录都已补上。其中 a-03、f2-05 现已解出。其余还没写完的题目仍然只收录原文，题解标注为「待补充」。补写时请遵循上面的约定：只写跑通的链路，探索记录里保留失败项与判据。
 
 
 ## 6. 免责声明
