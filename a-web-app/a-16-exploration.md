@@ -122,6 +122,20 @@ GET /debug/config  → 200 {"api":{"admin_token":"internal_admin_token_2024",
 2. 内网 API 只暴露 `/health`、`/status`、`/debug/config` 三个端点，枚举 80+ 路径无新发现。
 3. token 的使用方式可能是「另一个尚未发现的入口」：例如探测服务本身有一个需要管理员身份的调试端点，或者内网还有第二台机器。
 
+## 第六阶段：主机名与 Host 变体
+
+用 40 个候选主机名 × 6 个端口（5000/80/8080/3000/8000/9000）通过 SSRF 探测：
+
+```
+web:80         OK（就是探测服务自己）
+web:5000/8080/3000/8000/9000  解析成功但端口拒绝
+其余 39 个名字（flag / metadata / admin-api / vault / db / redis …）全部解析失败
+```
+
+`http://internal%2dapi:5000/...` 能解析（URL 编码的连字符绕过了主机名黑名单），但 `/debug/config` 的响应与用 `nip.io` 时**逐字节相同**；加 `X-Forwarded-Host: internal-api` 也无变化。
+
+再确认 `Cookie: admin_token=<token>; token=<token>` 与 `X-Admin-Token` 一起发送时，4 935 条路径枚举**仍然只有 3 个端点**（说明探测服务不会把我们的头转发给目标，或 internal-api 根本不读这些头）。
+
 ## 结论（截至记录时）
 
 - SSRF 已完全打通，能读任意 HTTP 端点、能绕 IP 黑名单。

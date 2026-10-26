@@ -126,6 +126,19 @@ Flask 的路由是精确匹配，没有大小写或尾斜杠归一化可利用�
 
 参照同类系统（登录表单 `action="/"`）试了 `POST /` 四组字段名，全部 **405**——`/` 只注册了 GET。
 
+## 第四阶段补充 3：方法白名单与 Cookie 名枚举
+
+`OPTIONS` 会返回每个路由允许的方法，这是最省事的接口画像：
+
+| 路由 | Allow |
+| --- | --- |
+| `/assets`、`/asset/1`、`/admin`、`/dashboard` | `HEAD, OPTIONS, GET` |
+| `/reimbursement`、`/login` | `HEAD, POST, OPTIONS, GET` |
+
+`/reimbursement` 确实注册了 POST，而且**GET/POST 都 302 → `/login`**（含 JSON body、空 body），说明 guard 覆盖两种方法。
+
+再对 18 个 cookie 名 × 3 个值（`jwt`/`token`/`access_token`/`auth_token`/`admin_token`/`uid`/`user_id`/`is_admin`/`role`/`remember` …）逐个试 `/assets`：**没有一个能跳出 302**。
+
 ## 第五阶段：实例重启对照
 
 怀疑是单实例异常，`close` 后重新 `start`（新地址、新 flag）：
