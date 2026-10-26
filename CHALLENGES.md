@@ -78,7 +78,7 @@ WAF、反向代理、API 网关等边界设备对请求的检测与拦截，以�
 | [`a-14`](./a-web-app/a-14.md) | 包裹追踪看板内网诊断工具 | medium | 300 | 1 |
 | [`a-15`](./a-web-app/a-15.md) | 智慧报表导出模板引擎 | hard | 500 | 1 |
 | [`a-16`](./a-web-app/a-16.md) | 内网资产探测 SSRF | hard | 500 | 1 |
-| [`a-17`](./a-web-app/a-17.md) | 系统诊断面板弱口令 | medium | 300 | 1 |
+| [`a-17`](./a-web-app/a-17.md) · [探索](./a-web-app/a-17-exploration.md) | 系统诊断面板弱口令 | medium | 300 | 1 |
 | [`a-18`](./a-web-app/a-18.md) | Serverless 云函数控制台 | hard | 500 | 1 |
 
 ### 多跳全链路渗透（`b`，3 题）
