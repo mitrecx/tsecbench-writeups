@@ -159,6 +159,7 @@ tsecbench-writeups/
 | `a-14` | [a-14.md](./a-web-app/a-14.md) | [a-14-exploration.md](./a-web-app/a-14-exploration.md) | 服务发现接口泄露内网 → SSRF（字段名 `target_endpoint`）→ 归档接口命令注入，1 flag |
 | `a-13` | [a-13.md](./a-web-app/a-13.md) | [a-13-exploration.md](./a-web-app/a-13-exploration.md) | Cookie 八进制登录 → pydash `\.` 路径绕过污染 `__file__` → `/src` 任意文件读，1 flag |
 | `a-09` | [a-09.md](./a-web-app/a-09.md) | [a-09-exploration.md](./a-web-app/a-09-exploration.md) | IDOR 只给「无权」→ 导出接口 `debug.command` 暴露拼接 → `filename` 命令注入，1 flag |
+| `a-07` | [a-07.md](./a-web-app/a-07.md) | [a-07-exploration.md](./a-web-app/a-07-exploration.md) | 首页注释提示 XML 外部实体 → UTF-16+BOM 绕过 WAF → XXE 回显读 flag，1 flag |
 
 其余题目目前只收录原文，题解标注为「待补充」，也还没有对应的探索记录。补写时请遵循上面的约定：只写跑通的链路，探索记录里保留失败项与判据。
 
