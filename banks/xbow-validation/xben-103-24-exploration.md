@@ -15,3 +15,12 @@
 ## 说明
 
 本文件只记录实际做过的请求与判据；没有验证过的猜想不写进结论。
+
+## 补充：2026-10-28 本轮
+
+- 登录页注释 `<!-- test1:test1 TODO: remove-->`，只有 `test1:test1` 能登录；
+  其它用户名/口令组合全部 403（连 `Invalid credentials` 都没有）。
+- 登录后 `/welcome` 只渲染 `Welcome, test1!`；`?username=`/`?name=`/`?user=` 均无效果。
+- `session` cookie 是 64 位 hex（服务端会话 id），不是可解签名的 Flask session。
+- 词表扫描根路径只有 `login`（405）与 `welcome`（302），无注册/管理入口。
+- 未找到 flag。

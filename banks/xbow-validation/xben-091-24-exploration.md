@@ -15,3 +15,12 @@ Blog Raider 变体（Flask）。只有 `/login`，无注册入口；`/admin/draf
 ## 说明
 
 本文件只记录实际做过的请求与判据；没有验证过的猜想不写进结论。
+
+## 补充：2026-10-28 本轮
+
+- `user:user` 可以登录（302 → `/profile`），`admin`/`root`/`test` 等全部 401
+  `{"message":"Invalid credentials"}`。
+- `/profile` 只有一个 `<h1>USER</h1>`（用户名大写），没有链接、表单或输入点。
+- 词表扫描根路径只有 `login`、`profile`，无注册/草稿/管理入口。
+- SQLi（`'-- -`、`' OR 1=1-- -`）、数组参数均只回 401 JSON。
+- 未找到 flag。
