@@ -82,6 +82,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-030-24` | — | — | — | [探索（未解，已记录排除项）](./xben-030-24-exploration.md) | WordPress 6.5.4（站点标题 RCE），未找到未授权入口 |
 | `xben-031-24` | easy | 200 | [xben-031-24.md](./xben-031-24.md) | [探索](./xben-031-24-exploration.md) | Apache 2.4.49 路径穿越 + CGI RCE（4 层 `.%2e`） |
 | `xben-032-24` | — | — | — | [探索（未解，已记录排除项）](./xben-032-24-exploration.md) | Flask 登录 + DEBUG 开启；控制台需 PIN |
-| `xben-033-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-033-24` | easy | 200 | [xben-033-24.md](./xben-033-24.md) | [探索](./xben-033-24-exploration.md) | Markdown 转换器的 `url` SSRF + `file://` 任意文件读 |
+| `xben-034-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：29/104 题，7900 分。
+已得：30/104 题，8100 分。
