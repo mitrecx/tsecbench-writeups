@@ -23,3 +23,18 @@
 ## 这次真正的收获
 
 Langflow 1.2.0 的代码校验接口没有鉴权，异常文本会带回命令输出。flag 在 `/challenge/flag.txt`。
+
+---
+
+## 补充：2026-10-27 本轮的卡点
+
+| 尝试 | 结果 | 判据 |
+| --- | --- | --- |
+| `GET :7860/health` × 5 | 全部 20 秒超时 | Langflow 启动慢（约 2 分钟） |
+| 第 6 次同请求 | `{"status":"ok"}` | 就绪 |
+| `GET /api/v1/version` | `1.2.0` | 确认服务 |
+| 直接把 `os.popen` 写在顶层代码 | 不执行 | 校验器只执行**装饰器**部分 |
+| 把 `raise Exception(os.popen(...).read())` 放进 `@exec(...)` | `function.errors` 里是 flag | 异常文本会被收集 |
+
+**卡点性质**：时序（启动）+ 执行位置（装饰器）。
+`/api/v1/validate/code` 不需要登录，就绪后一次通。

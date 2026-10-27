@@ -68,3 +68,31 @@ Manager 的预启动脚本会读取用户目录里的 `ComfyUI-Manager/startup-s
 ## 这次真正的收获
 
 直接读 `/challenge/flag.txt` 被路径检查挡住。用户目录可以写入 Manager 的启动脚本。`/api/manager/reboot` 让预启动阶段执行这行 `cp`，flag 就出现在 `got_flag.txt` 里。
+
+---
+
+## 补充：2026-10-27 本轮的卡点
+
+### 容器就绪是独立故障源
+
+| 尝试 | 结果 | 判据 |
+| --- | --- | --- |
+| `GET :8188/system_stats` | 连续 `Failed to connect` | 进程还没起 |
+| 轮询约 20 秒后同一请求 | 200，返回 `comfyui_version 0.9.2` | 就绪 |
+
+不要用第一次 `refused` 判"服务不存在"。
+
+### `reboot` 返回空响应是正常的
+
+`GET /api/manager/reboot` 返回 `curl: (52) Empty reply from server`，
+因为进程在响应前就把自己重启了。**判据**：随后轮询 `/system_stats` 恢复 200 即视为成功。
+
+### 启动脚本的路径必须 URL 编码
+
+`POST /api/userdata/{path}` 的 `path` 是 `ComfyUI-Manager/startup-scripts/install-scripts.txt`，
+不编码会被当成路径分隔吃掉。编码后返回写入的路径字符串。
+
+### 转机
+
+写启动脚本（`["/bin","/bin/sh","-c","cp /challenge/flag.txt ..."]`）→ `reboot`
+→ 轮询到就绪 → `GET /api/userdata/got_flag.txt`。

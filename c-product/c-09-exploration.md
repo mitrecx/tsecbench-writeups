@@ -21,3 +21,37 @@ Entity SQL Processor 接受 INSERT。插入 `DATA_RESOURCE`（`LOCAL_FILE`，路
 ## 这次真正的收获
 
 OFBiz 18.12 的默认管理员可以写数据资源。`LOCAL_FILE` 加 `ViewSimpleContent` 会把 `/challenge/flag.txt` 原样返回。
+
+---
+
+## 补充：2026-10-27 本轮的卡点
+
+### `EntitySQLProcessor` 一次只收一条语句
+
+| payload | 结果 | 判据 |
+| --- | --- | --- |
+| 两条 `INSERT` 用 `;` 连接 | `SQL Exception ... (Syntax error: Encountered ";" at line 1, column 201.)` | 解析器只接受单条 |
+| 拆成两次 POST | 各自 `Affected 1 rows.` | 成功 |
+
+`;` 的位置也说明它是在**语法层**拒绝，不是权限。
+
+### `ViewSimpleContent` 的 500 是作用域问题，不是 cookie 没带上
+
+用 `/webtools` 登录后的会话请求：
+
+```text
+/content/control/ViewSimpleContent?contentId=FLAGC1&externalLoginKey=EL...
+-> 500
+   ViewHandlerException: User authorization is required for this service: genericContentPermission
+```
+
+把 `JSESSIONID` 和 `OFBiz.Visitor` 显式拼进 `Cookie:` 仍然是同一个 500。
+**判据**：报错名字是 `genericContentPermission`（服务级授权），不是"未登录"。
+
+### 转机
+
+在 `/content/control/login`（表单 `USERNAME`/`PASSWORD`/`JavaScriptEnabled`）**单独登录一次**，
+拿到 `/content` 作用域的 `JSESSIONID`，再请求 `ViewSimpleContent` → 200，正文就是 flag。
+
+**教训**：同一产品的不同 WebApp（`/webtools` 与 `/content`）会话不通用；
+cookie 的 `path` 决定它会不会被带上。

@@ -29,3 +29,30 @@
 ## 这次真正的收获
 
 普通用户能把自己的 JWKS 放到公开路径。联邦交换只认 `ops`，换到的密钥只能读制品桶。root 口令在 Terraform 状态里，flag 在 `secrets-vault/final/flag.txt`。
+
+---
+
+## 补充：2026-10-27 本轮的卡点
+
+### `jku` 只接受相对路径
+
+| 尝试 | 结果 | 判据 |
+| --- | --- | --- |
+| `jku: http://<target>/files/shared-assets/users/N/jwks-hs.json` | `{"error":"token rejected","detail":"jku must point to /files/"}` | 必须是相对路径 |
+| `jku: /files/shared-assets/users/N/jwks-hs.json` | `{"group":"ops",...,"access_key":"audit-svc"}` | 通过 |
+
+报错原文已经把规则写清楚了，不用猜。
+
+### `/api/sts/exchange` 之后还要业务会话
+
+拿到 STS 凭据后直接 `POST /api/storage/get` 仍然 `{"error":"authentication required"}`。
+
+**判据**：`exchange` 只换"存储凭据"，`storage/*` 要的是**业务 Bearer**。
+所以先 `POST /api/auth/login` 拿 Bearer，再带 `access_key`/`secret_key` 调 `storage/get`。
+
+### 转机
+
+注册普通用户 → 上传 HS256 JWKS（`kty: oct`，`k` = base64url("fed-secret-key")）
+→ 用该密钥自签 `group: ops` 的 JWT（`jku` 指向上传后的相对地址）
+→ `sts/exchange` 拿 `audit-svc` → 读 `infra-artifacts/terraform/prod.tfstate`
+→ 取 root 口令 → 列 `secrets-vault` → 读 `final/flag.txt`。

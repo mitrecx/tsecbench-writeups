@@ -145,3 +145,35 @@ flag{41215050-6171-49da-b48f-fc29547794de}
 4. **JWT `kid` 只是线索。** 真正的弱点是私钥可读 + 运行时端口暴露，不是算法或 kid 注入。
 5. **flag 可能在进程间通道上。** `/hint.txt` 明确指向 unix socket；`/challenge/flag.txt` 是 root-only 的诱饵。
 6. **管理面板的「备忘录」是第二个 Bug 的提示**（`php_code.execute` 的点号被 PHP 转义），但有更直接的 RCE 时不必绕这一层。
+
+---
+
+## 补充：2026-10-27 本轮的卡点
+
+### 9000 不是 HTTP
+
+`GET :9000` 得到 `Connection reset`。结合 `php-fpm` 默认端口判断是 FastCGI，
+需要构造 `BEGIN_REQUEST` + `PARAMS` + `STDIN`。
+
+### 手写 FastCGI 的两个打包错误
+
+| 报错 | 原因 | 修正 |
+| --- | --- | --- |
+| `struct.error: pack expected 6 items for packing (got 5)` | 头字段漏了一个 | `!BBHHBB`：version, type, requestId, contentLength, paddingLength, reserved |
+| `struct.error: 'B' format requires 0 <= number <= 255` | 长度塞进了 `B` | 长度是 `H`（2 字节） |
+
+### `/hint.txt` 在本实例是 404
+
+题解说 `/hint.txt` 给出 metadata socket 路径，本轮 nginx 直接 404。
+**判据**：404 是 nginx 的页，不是应用；直接跳过，靠 FastCGI 自己找。
+
+### 转机（以及"跳过预期链路"）
+
+FastCGI 直连已给任意 PHP 执行，所以：
+
+1. 读 `/var/www/html/keys/prod.key` → `cloudfunc_prod_2026_hmac_key_keep_internal`（顺路验证）；
+2. 伪造 HS256 admin JWT → `/control.php` 200（确认面板可进）；
+3. **真正的 flag 用 `stream_socket_client("unix:///run/cloudfunc/metadata.sock")`
+   直接读 `/latest/flag`**，绕过整条 JWT 链。
+
+**教训**：已经有任意代码执行时，不必按题面链路从"读 key → 伪造 JWT → 面板"一路走完。

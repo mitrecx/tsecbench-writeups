@@ -21,3 +21,17 @@
 ## 这次真正的收获
 
 HugeGraph 的文件读取限制绑在工作线程名上。把名字改离 `gremlin-server-exec` 之后，Groovy 可以直接读 flag 文件。
+
+---
+
+## 补充：2026-10-27 本轮的卡点
+
+| 尝试 | 结果 | 判据 |
+| --- | --- | --- |
+| 启动后立刻 `POST /gremlin` | `Couldn't connect to server` | 进程未就绪 |
+| 等待约 60 秒后 `GET /apis` | 200，返回 API 列表 | 就绪 |
+| 直接读 `/challenge/flag.txt` | 被策略拦（线程名以 `gremlin-server-exec` 开头） | 安全策略按线程名判定 |
+| 反射改 `Thread.currentThread()` 的 `name` 后再读 | 200，`result.data` 是 flag | 策略只看线程名 |
+
+**卡点性质**：属于第 10 类（时序），不是"接口不存在"。
+`/gremlin` 本身没有鉴权，就绪后一次就通。

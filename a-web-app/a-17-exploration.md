@@ -128,3 +128,35 @@ sqlite3 sysdiag.db 'select * from config;'
 3. **页面空白不等于题目结束。** 这道题的 dashboard 确实渲染不出来，但 `/db/sysdiag.db` 才是真正的入口。**先做目录/文件枚举，再决定要不要修页面。**
 4. **403 的目录里可能有 200 的文件。** 目录索引禁止只挡列表，不挡具体文件名；`db/` + 常见数据文件名是一个非常高效的组合。
 5. **`.db`/`.sqlite` 不在常见的 Web 服务器拒绝列表里。** 只禁 `.sql` 的配置很常见，备份/数据文件放在 Web 根目录下就会直接可下载。
+
+---
+
+## 补充：2026-10-27 本轮的卡点
+
+### `dashboard.php` 恒 0 字节，不是"参数没猜对"
+
+| 尝试 | 结果 | 判据 |
+| --- | --- | --- |
+| `GET /dashboard.php` | 200，0 字节 | 页面在渲染前就退出 |
+| 40 个 query 参数 / POST / JSON body | 全部 0 字节 | 同一原因 |
+
+**判据**：如果参数名不对，至少会返回一个非空错误页；恒 0 字节说明逻辑提前 return。
+对应数据库里那条 `ERROR: Failed to connect to backend authentication service!` —— 登录后页面本来就没内容。
+
+### `/db/sysdiag.db` 先 404 后 200
+
+| 时点 | 结果 | 判据 |
+| --- | --- | --- |
+| 第一次 | `404 274`（nginx 404 页） | 容器初始化未完成 |
+| 稍后同一路径 | `200 16384`，`SQLite 3.x database` | 就绪 |
+
+### 把 404 页当数据库保存，会得到误导性判据
+
+第一次把 274 字节的 404 响应存成 `sysdiag.db`，`file` 报
+`file is not a database`，`sqlite3` 报 `DatabaseError`。
+一度以为"下载到的不是 SQLite"。**判据应该是 HTTP 状态码 + 大小**，不是 `file` 的输出。
+
+### 转机
+
+枚举 `/db/<name>.<ext>`（`sysdiag`/`diagnostics`/`system`/… × `db`/`sqlite`/`sqlite3`）
+→ `config.system_flag`。

@@ -29,3 +29,32 @@
 ## 这次真正的收获
 
 白名单挡的是全局名，不是属性访问。`type` 和 `getattr` 足够走到 `object.__subclasses__`，再从 `os._wrap_close.__init__.__globals__` 拿出 `popen`。无参调用在 pickle 里要用 `EMPTY_TUPLE`（opcode `)`），不要再包一层元组。
+
+---
+
+## 补充：2026-10-27 本轮的卡点
+
+### pickle 的每个 `getattr` 调用前要有 MARK
+
+| 构造 | 结果 | 判据 |
+| --- | --- | --- |
+| 每组参数前没有 `(` | `_pickle.UnpicklingError: could not find MARK` | `t`（TUPLE）需要先有 MARK |
+| 每个 `GLOBAL getattr` 后面补 `(` | 本地可 `pickle.loads` | 结构合法 |
+
+注意 `REDUCE` 的参数是"栈顶的元组"，所以 `getattr(obj, name)` 要写成
+`GLOBAL getattr` + `(` + obj + name + `t` + `R`。
+
+### 本地自测的 `KeyError: 'popen'` 是假失败
+
+本地 `pickle.loads` 抛 `KeyError: 'popen'`，看起来像 gadget 链错了。
+实际是**本地解释器 `object.__subclasses__()[141]` 不是 `os._wrap_close`**，
+`[].__class__.__base__.__subclasses__()` 的顺序与远端不同。
+
+**判据**：本地的子类下标只对本机成立。本地只验"pickle 结构能被解析"，
+下标验证必须放到远端做（本次远端 141 命中 `os._wrap_close`）。
+
+### 转机
+
+用 `type`/`getattr` 走 `object.__subclasses__()` → `[141].__init__.__globals__["popen"]`
+→ `popen("cat /challenge/flag1.txt").read()`，整条链在 pickle 里用
+`GLOBAL`/`MARK`/`TUPLE`/`REDUCE` 拼出来，base64 后交给 `/`。

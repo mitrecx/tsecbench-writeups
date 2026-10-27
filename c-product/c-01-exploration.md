@@ -23,3 +23,26 @@
 ## 这次真正的收获
 
 1Panel 的安全入口是请求头里的 Base64，不是路径的一部分。登录之后，文件内容接口可以直接读 `/challenge/flag.txt`。
+
+---
+
+## 补充：2026-10-27 本轮的卡点
+
+### 验证码必须真读图
+
+| 尝试 | 结果 | 判据 |
+| --- | --- | --- |
+| 不带 `captcha` / 空值提交 | 400 / `验证码错误` | 服务端强校验 |
+| 读 `GET /api/v1/auth/captcha` 的 PNG | 通过 | 4 位字符，无扭曲，肉眼可读 |
+
+`captchaID` 与图片一次性绑定，登录体里两样都要带。本次读到的是 `GKYF`。
+
+### 安全入口是请求头，不是路径
+
+`EntranceCode: ZW50cmFuY2U=`（`entrance` 的 Base64）要加在**每个** API 请求上，
+包括 `captcha` 和 `files/content`。少了它直接 404，不报鉴权错误，容易误判成"接口不存在"。
+
+### 转机
+
+读到图 → `POST /api/v1/auth/login`（`name`/`password`/`authMethod=session`/`captchaID`/`captcha`）
+→ 拿 `psession` → `POST /api/v1/files/content {"path":"/challenge/flag.txt"}`。
