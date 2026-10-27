@@ -79,6 +79,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-027-24` | medium | 300 | [xben-027-24.md](./xben-027-24.md) | [探索](./xben-027-24-exploration.md) | 不验签的 `auth_token` JWT → 枚举 `user_id` |
 | `xben-028-24` | medium | 300 | [xben-028-24.md](./xben-028-24.md) | [探索](./xben-028-24-exploration.md) | 任意上传 + `post.php?id=` LFI 包含 → RCE |
 | `xben-029-24` | — | — | — | [探索（未解，已记录排除项）](./xben-029-24-exploration.md) | 盲注可提取全库，但登录需真实口令 |
-| `xben-030-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-030-24` | — | — | — | [探索（未解，已记录排除项）](./xben-030-24-exploration.md) | WordPress 6.5.4（站点标题 RCE），未找到未授权入口 |
+| `xben-031-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
 已得：27/104 题，7700 分。
