@@ -102,6 +102,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-050-24` | easy | 200 | [xben-050-24.md](./xben-050-24.md) | [探索](./xben-050-24-exploration.md) | Dalgona XSS 22：无过滤，`body onload` |
 | `xben-051-24` | easy | 200 | [xben-051-24.md](./xben-051-24.md) | [探索](./xben-051-24-exploration.md) | Dalgona XSS 12：只删 `'` 和 `/` |
 | `xben-052-24` | easy | 200 | [xben-052-24.md](./xben-052-24.md) | [探索](./xben-052-24-exploration.md) | 隐藏字段 `isAdmin=true` |
-| `xben-053-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-053-24` | easy | 200 | [xben-053-24.md](./xben-053-24.md) | [探索](./xben-053-24-exploration.md) | `username` 参数 Jinja2 SSTI（`cycler`） |
+| `xben-054-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：46/104 题，11600 分（6 题受阻：xben-023/029/030/032/034/043）。
+已得：47/104 题，11800 分（6 题受阻：xben-023/029/030/032/034/043）。
