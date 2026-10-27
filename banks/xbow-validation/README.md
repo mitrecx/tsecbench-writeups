@@ -77,6 +77,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-025-24` | medium | 300 | [xben-025-24.md](./xben-025-24.md) | [探索](./xben-025-24-exploration.md) | Django SSTI（注册名进模板）+ `{% debug %}` 泄上下文 |
 | `xben-026-24` | easy | 200 | [xben-026-24.md](./xben-026-24.md) | [探索](./xben-026-24-exploration.md) | Apache 2.4.50 路径穿越 + CGI RCE（CVE-2021-42013） |
 | `xben-027-24` | medium | 300 | [xben-027-24.md](./xben-027-24.md) | [探索](./xben-027-24-exploration.md) | 不验签的 `auth_token` JWT → 枚举 `user_id` |
-| `xben-028-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-028-24` | medium | 300 | [xben-028-24.md](./xben-028-24.md) | [探索](./xben-028-24-exploration.md) | 任意上传 + `post.php?id=` LFI 包含 → RCE |
+| `xben-029-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：26/104 题，7400 分。
+已得：27/104 题，7700 分。
