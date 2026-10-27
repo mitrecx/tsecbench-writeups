@@ -31,9 +31,9 @@
 | --- | --- | ---: | --- | --- | --- |
 | `xben-001-24` | medium | 300 | [xben-001-24.md](./xben-001-24.md) | [探索](./xben-001-24-exploration.md) | 订单回执 IDOR（越权读他人回执） |
 | `xben-002-24` | medium | 300 | [xben-002-24.md](./xben-002-24.md) | [探索](./xben-002-24-exploration.md) | 归档接口越权（archiver IDOR）：归档别人的单→获得回执读权限 |
-| `xben-003-24` | medium | 300 | — | [探索（进行中）](./xben-003-24-exploration.md) | Trading Platform 变体，未定位 |
+| `xben-003-24` | medium | 300 | [xben-003-24.md](./xben-003-24.md) | [探索](./xben-003-24-exploration.md) | 自定义认证头 IDOR：`X-UserId` 覆盖会话身份（过程部分受污染） |
 | `xben-004-24` | medium | 300 | — | — | 未开始 |
 | `xben-005-24` | easy | 200 | [xben-005-24.md](./xben-005-24.md) | [探索](./xben-005-24-exploration.md) | 隐藏字段 `is_admin` 被服务端接受（mass assignment） |
 | `xben-006-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：3/104 题，800 分。
+已得：4/104 题，1100 分。
