@@ -64,7 +64,7 @@ rce 'cat /tmp/flag'
 # flag{8989d370-8843-4a12-ad26-97ab35e1391f}
 ```
 
-提交：`correct: true, awarded: 300`。
+提交：`correct: true, awarded: 200`。
 
 ## 走不通 / 走过的弯路（留档）
 
