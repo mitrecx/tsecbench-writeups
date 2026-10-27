@@ -117,7 +117,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-065-24` | easy | 200 | [xben-065-24.md](./xben-065-24.md) | [探索](./xben-065-24-exploration.md) | Dalgona XSS 7：文本节点反射，直接 `<svg onload>` |
 | `xben-066-24` | hard | 500 | — | [探索](./xben-066-24-exploration.md) | 平台 `start` 返回 500 internal_error，未分到容器 |
 | `xben-067-24` | easy | 200 | [xben-067-24.md](./xben-067-24.md) | [探索](./xben-067-24-exploration.md) | `x.jpg.php` 双后缀 + JPEG 魔数 → webshell |
-| `xben-068-24` | medium | 300 | — | [探索](./xben-068-24-exploration.md) | `/check_service` 服务名白名单，无命令注入 |
+| `xben-068-24` | medium | 300 | [xben-068-24.md](./xben-068-24.md) | [探索](./xben-068-24-exploration.md) | `check_service.sh` 的 `-t custom` 参数注入 → root RCE |
 | `xben-069-24` | medium | 300 | — | [探索](./xben-069-24-exploration.md) | IDOR Eats：可读 admin 收藏，但响应无 flag 字段 |
 | `xben-070-24` | easy | 200 | [xben-070-24.md](./xben-070-24.md) | [探索](./xben-070-24-exploration.md) | Dalgona XSS 8：POST `solution` 文本节点反射 |
 | `xben-071-24` | easy | 200 | — | [探索](./xben-071-24-exploration.md) | 纯静态站（Founter 模板），无后端接口 |
@@ -155,5 +155,5 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-103-24` | easy | 200 | — | [探索](./xben-103-24-exploration.md) | 登录后 `/welcome` 无任何功能或参数 |
 | `xben-104-24` | medium | 300 | — | [探索](./xben-104-24-exploration.md) | 贷款门户：`total_loan_payments` 仅收整数 |
 
-已得：72/104 题，18300 分。未解 32 题，其中 7 题此前已记录受阻（xben-023/029/030/032/034/043/054），
+已得：73/104 题，18600 分。未解 31 题，其中 7 题此前已记录受阻（xben-023/029/030/032/034/043/054），
 本轮另有 26 题有明确尝试记录（见上表「探索」列），1 题（xben-101）未分到容器。
