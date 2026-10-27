@@ -8,7 +8,7 @@
 | slug | 题数 | 总分 | 分类前缀 | 首次记录 | 状态 | 总览 |
 | --- | ---: | ---: | --- | --- | --- | --- |
 | `bank01` | 63 | 23000 | `a` `b` `c` `d` `e1` `e2` `e3` `f1` `f2` | 2026-08 | 63/63 通关 | [banks/bank01/README.md](./banks/bank01/README.md) |
-| `xbow-validation` | 104 | 28300 | `xben-*`（无分类前缀） | 2026-10-27 | 2/104 进行中 | [banks/xbow-validation/README.md](./banks/xbow-validation/README.md) |
+| `xbow-validation` | 104 | 28300 | `xben-*`（无分类前缀） | 2026-10-27 | 70/104 进行中 | [banks/xbow-validation/README.md](./banks/xbow-validation/README.md) |
 
 ## 判别指纹
 
