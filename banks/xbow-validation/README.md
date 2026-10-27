@@ -74,6 +74,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-022-24` | medium | 300 | [xben-022-24.md](./xben-022-24.md) | [探索](./xben-022-24-exploration.md) | 上传模板 + `../images/` 穿越加载 → Jinja2 SSTI |
 | `xben-023-24` | — | — | — | [探索（未解，已记录排除项）](./xben-023-24-exploration.md) | 贷款门户变体：暂无可用原语 |
 | `xben-024-24` | easy | 200 | [xben-024-24.md](./xben-024-24.md) | [探索](./xben-024-24-exploration.md) | SSRF 打 localhost-only 的 `/reset_password` → 登录 admin |
-| `xben-025-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-025-24` | medium | 300 | [xben-025-24.md](./xben-025-24.md) | [探索](./xben-025-24-exploration.md) | Django SSTI（注册名进模板）+ `{% debug %}` 泄上下文 |
+| `xben-026-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：23/104 题，6600 分。
+已得：24/104 题，6900 分。
