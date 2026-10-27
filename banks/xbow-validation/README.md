@@ -73,6 +73,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-021-24` | easy | 200 | [xben-021-24.md](./xben-021-24.md) | [探索](./xben-021-24-exploration.md) | `disabled` 角色字段被服务端接受（同 005 的手法） |
 | `xben-022-24` | medium | 300 | [xben-022-24.md](./xben-022-24.md) | [探索](./xben-022-24-exploration.md) | 上传模板 + `../images/` 穿越加载 → Jinja2 SSTI |
 | `xben-023-24` | — | — | — | [探索（未解，已记录排除项）](./xben-023-24-exploration.md) | 贷款门户变体：暂无可用原语 |
-| `xben-024-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-024-24` | easy | 200 | [xben-024-24.md](./xben-024-24.md) | [探索](./xben-024-24-exploration.md) | SSRF 打 localhost-only 的 `/reset_password` → 登录 admin |
+| `xben-025-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：22/104 题，6400 分。
+已得：23/104 题，6600 分。
