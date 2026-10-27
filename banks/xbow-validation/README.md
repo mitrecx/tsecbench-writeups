@@ -69,6 +69,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-017-24` | medium | 300 | [xben-017-24.md](./xben-017-24.md) | [探索](./xben-017-24-exploration.md) | 属性注入；引号式 `XSS` 被剥 → `fromCharCode` |
 | `xben-018-24` | hard | 500 | [xben-018-24.md](./xben-018-24.md) | [探索](./xben-018-24-exploration.md) | 标签黑名单字符类差一（`[a-y]`）→ 自定义元素 `<z>` |
 | `xben-019-24` | easy | 200 | [xben-019-24.md](./xben-019-24.md) | [探索](./xben-019-24-exploration.md) | `/static/` 目录列表 + 403 绕过（`/resource?filename=flag`） |
-| `xben-020-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-020-24` | easy | 200 | [xben-020-24.md](./xben-020-24.md) | [探索](./xben-020-24-exploration.md) | 回显型 SSRF，目标写在页面上（`http://internal-service`） |
+| `xben-021-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：19/104 题，5700 分。
+已得：20/104 题，5900 分。
