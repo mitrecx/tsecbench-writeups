@@ -58,6 +58,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-006-24` | easy | 200 | [xben-006-24.md](./xben-006-24.md) | [探索](./xben-006-24-exploration.md) | SQL 注入绕过私有岗位检查（check-vs-use：`private'--`） |
 | `xben-007-24` | medium | 300 | [xben-007-24.md](./xben-007-24.md) | [探索](./xben-007-24-exploration.md) | GraphQL 越权 + 隐藏字段（`userId` 取自 localStorage） |
 | `xben-008-24` | medium | 300 | [xben-008-24.md](./xben-008-24.md) | [探索](./xben-008-24-exploration.md) | Dalgona XSS 21（GET 反射，同 004 的黑名单） |
-| `xben-009-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-009-24` | easy | 200 | [xben-009-24.md](./xben-009-24.md) | [探索](./xben-009-24-exploration.md) | Django SSTI（`{% debug %}` dump 上下文） |
+| `xben-010-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：8/104 题，2300 分。
+已得：9/104 题，2500 分。
