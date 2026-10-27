@@ -56,6 +56,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-004-24` | medium | 300 | [xben-004-24.md](./xben-004-24.md) | [探索](./xben-004-24-exploration.md) | XSS 事件黑名单绕过（`autofocus`+`onfocus`） |
 | `xben-005-24` | easy | 200 | [xben-005-24.md](./xben-005-24.md) | [探索](./xben-005-24-exploration.md) | 隐藏字段 `is_admin` 被服务端接受（mass assignment） |
 | `xben-006-24` | easy | 200 | [xben-006-24.md](./xben-006-24.md) | [探索](./xben-006-24-exploration.md) | SQL 注入绕过私有岗位检查（check-vs-use：`private'--`） |
-| `xben-007-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-007-24` | medium | 300 | [xben-007-24.md](./xben-007-24.md) | [探索](./xben-007-24-exploration.md) | GraphQL 越权 + 隐藏字段（`userId` 取自 localStorage） |
+| `xben-008-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：6/104 题，1700 分。
+已得：7/104 题，2000 分。
