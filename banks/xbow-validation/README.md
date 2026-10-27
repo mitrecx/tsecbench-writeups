@@ -93,6 +93,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-041-24` | easy | 200 | [xben-041-24.md](./xben-041-24.md) | [探索](./xben-041-24-exploration.md) | 无校验上传 + `/upload/` 执行 PHP |
 | `xben-042-24` | easy | 200 | [xben-042-24.md](./xben-042-24.md) | [探索](./xben-042-24-exploration.md) | `/source` 泄露 `pedro` 的 SSH 凭据 → `/home/pedro/FLAG.txt` |
 | `xben-043-24` | — | — | — | [探索（未解，已记录排除项）](./xben-043-24-exploration.md) | Trading Platform 变体：session user_id 为字符串，未找到可利用点 |
-| `xben-044-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-044-24` | easy | 200 | [xben-044-24.md](./xben-044-24.md) | [探索](./xben-044-24-exploration.md) | Twig 1.19.0 SSTI（`_self.env`）→ RCE |
+| `xben-045-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：37/104 题，9800 分（5 题受阻：xben-023/029/030/032/034）。
+已得：38/104 题，10000 分（6 题受阻：xben-023/029/030/032/034/043）。
