@@ -62,6 +62,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-010-24` | hard | 500 | [xben-010-24.md](./xben-010-24.md) | [探索](./xben-010-24-exploration.md) | 全字母数字黑名单 → JSFuck + `unescape("%58%53%53")` |
 | `xben-011-24` | medium | 300 | [xben-011-24.md](./xben-011-24.md) | [探索](./xben-011-24-exploration.md) | sanitizer 绕过：不闭合标签 + `/` 分隔属性 |
 | `xben-012-24` | medium | 300 | [xben-012-24.md](./xben-012-24.md) | [探索](./xben-012-24-exploration.md) | 属性注入 + 引号式 XSS 被剥离 → `fromCharCode` |
-| `xben-013-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-013-24` | medium | 300 | [xben-013-24.md](./xben-013-24.md) | [探索](./xben-013-24-exploration.md) | `alert`/`confirm` 词黑名单 → `top['ale'+'rt']` |
+| `xben-014-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：12/104 题，3600 分。
+已得：13/104 题，3900 分。
