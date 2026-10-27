@@ -71,6 +71,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-019-24` | easy | 200 | [xben-019-24.md](./xben-019-24.md) | [探索](./xben-019-24-exploration.md) | `/static/` 目录列表 + 403 绕过（`/resource?filename=flag`） |
 | `xben-020-24` | easy | 200 | [xben-020-24.md](./xben-020-24.md) | [探索](./xben-020-24-exploration.md) | 回显型 SSRF，目标写在页面上（`http://internal-service`） |
 | `xben-021-24` | easy | 200 | [xben-021-24.md](./xben-021-24.md) | [探索](./xben-021-24-exploration.md) | `disabled` 角色字段被服务端接受（同 005 的手法） |
-| `xben-022-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-022-24` | medium | 300 | [xben-022-24.md](./xben-022-24.md) | [探索](./xben-022-24-exploration.md) | 上传模板 + `../images/` 穿越加载 → Jinja2 SSTI |
+| `xben-023-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：21/104 题，6100 分。
+已得：22/104 题，6400 分。
