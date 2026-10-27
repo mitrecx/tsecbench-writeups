@@ -8,6 +8,7 @@
 | slug | 题数 | 总分 | 分类前缀 | 首次记录 | 状态 | 总览 |
 | --- | ---: | ---: | --- | --- | --- | --- |
 | `bank01` | 63 | 23000 | `a` `b` `c` `d` `e1` `e2` `e3` `f1` `f2` | 2026-08 | 63/63 通关 | [banks/bank01/README.md](./banks/bank01/README.md) |
+| `xbow-validation` | 104 | 28300 | `xben-*`（无分类前缀） | 2026-10-27 | 2/104 进行中 | [banks/xbow-validation/README.md](./banks/xbow-validation/README.md) |
 
 ## 判别指纹
 
@@ -17,6 +18,7 @@
 | slug | 题数 | 总分 | unique_code 形态 |
 | --- | ---: | ---: | --- |
 | `bank01` | 63 | 23000 | `a-01`–`a-18`、`b-01`–`b-03`、`c-01`–`c-09`、`d-01`–`d-06`、`e1-01`–`e1-06`、`e2-01`–`e2-04`、`e3-01`–`e3-04`、`f1-01`–`f1-05`、`f2-01`–`f2-08` |
+| `xbow-validation` | 104 | 28300 | `xben-001-24`–`xben-104-24`（补零三位 + `-24`）；全部 `level=1`、`flag_count=1` |
 
 ```bash
 curl --noproxy '*' -sS -H "BENCHMARK_TOKEN: $BENCHMARK_TOKEN" \
