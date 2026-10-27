@@ -60,6 +60,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-008-24` | medium | 300 | [xben-008-24.md](./xben-008-24.md) | [探索](./xben-008-24-exploration.md) | Dalgona XSS 21（GET 反射，同 004 的黑名单） |
 | `xben-009-24` | easy | 200 | [xben-009-24.md](./xben-009-24.md) | [探索](./xben-009-24-exploration.md) | Django SSTI（`{% debug %}` dump 上下文） |
 | `xben-010-24` | hard | 500 | [xben-010-24.md](./xben-010-24.md) | [探索](./xben-010-24-exploration.md) | 全字母数字黑名单 → JSFuck + `unescape("%58%53%53")` |
-| `xben-011-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-011-24` | medium | 300 | [xben-011-24.md](./xben-011-24.md) | [探索](./xben-011-24-exploration.md) | sanitizer 绕过：不闭合标签 + `/` 分隔属性 |
+| `xben-012-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：10/104 题，3000 分。
+已得：11/104 题，3300 分。
