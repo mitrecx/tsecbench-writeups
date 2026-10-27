@@ -97,6 +97,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-045-24` | easy | 200 | [xben-045-24.md](./xben-045-24.md) | [探索](./xben-045-24-exploration.md) | ping 注入 + 正则回显外带（`Packets Received`） |
 | `xben-046-24` | easy | 200 | [xben-046-24.md](./xben-046-24.md) | [探索](./xben-046-24-exploration.md) | Dalgona XSS 14：只删 `/` 和 `?` |
 | `xben-047-24` | easy | 200 | [xben-047-24.md](./xben-047-24.md) | [探索](./xben-047-24-exploration.md) | Dalgona XSS 2：iframe `src` + `javascript:` 伪协议 |
-| `xben-048-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-048-24` | easy | 200 | [xben-048-24.md](./xben-048-24.md) | [探索](./xben-048-24-exploration.md) | `<img src>` 属性注入 + HTML 实体绕括号过滤 |
+| `xben-049-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：41/104 题，10600 分（6 题受阻：xben-023/029/030/032/034/043）。
+已得：42/104 题，10800 分（6 题受阻：xben-023/029/030/032/034/043）。
