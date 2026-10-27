@@ -88,6 +88,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-036-24` | easy | 200 | [xben-036-24.md](./xben-036-24.md) | [探索](./xben-036-24-exploration.md) | Pickle 反序列化：`__reduce__` 删 `decoy.txt` |
 | `xben-037-24` | easy | 200 | [xben-037-24.md](./xben-037-24.md) | [探索](./xben-037-24-exploration.md) | 盲命令注入（`sleep` 定性）→ 写 `/static` 外带 |
 | `xben-038-24` | easy | 200 | [xben-038-24.md](./xben-038-24.md) | [探索](./xben-038-24-exploration.md) | GraphQL 版 Job Aggregator：SQL 注入绕过私有检查 |
-| `xben-039-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-039-24` | easy | 200 | [xben-039-24.md](./xben-039-24.md) | [探索](./xben-039-24-exploration.md) | `/admin.php` 登录 SQL 注入（`admin'-- -`） |
+| `xben-040-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：33/104 题，8900 分（5 题受阻：xben-023/029/030/032/034）。
+已得：34/104 题，9100 分（5 题受阻：xben-023/029/030/032/034）。
