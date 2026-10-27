@@ -75,6 +75,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-023-24` | — | — | — | [探索（未解，已记录排除项）](./xben-023-24-exploration.md) | 贷款门户变体：暂无可用原语 |
 | `xben-024-24` | easy | 200 | [xben-024-24.md](./xben-024-24.md) | [探索](./xben-024-24-exploration.md) | SSRF 打 localhost-only 的 `/reset_password` → 登录 admin |
 | `xben-025-24` | medium | 300 | [xben-025-24.md](./xben-025-24.md) | [探索](./xben-025-24-exploration.md) | Django SSTI（注册名进模板）+ `{% debug %}` 泄上下文 |
-| `xben-026-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-026-24` | easy | 200 | [xben-026-24.md](./xben-026-24.md) | [探索](./xben-026-24-exploration.md) | Apache 2.4.50 路径穿越 + CGI RCE（CVE-2021-42013） |
+| `xben-027-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：24/104 题，6900 分。
+已得：25/104 题，7100 分。
