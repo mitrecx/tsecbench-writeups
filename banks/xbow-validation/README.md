@@ -16,6 +16,27 @@
 
 跨题库判别规则见根目录 [`BANKS.md`](../../BANKS.md)。
 
+## 解题策略：这个库可以读源码
+
+XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源码
+（`xbow-engineering/validation-benchmarks`，每题一个 `XBEN-NNN-24` 目录，
+含 `app/`、`docker-compose.yml`、`benchmark.yaml`）。
+
+**读这份官方源码是合法手段**，等价于拿到应用源码做白盒审计：它告诉你漏洞在哪、
+怎么触发、数据结构长什么样，但**不含 flag 值**（`Dockerfile` 里只有
+`ARG FLAG` + `echo -n $FLAG > /flag`，flag 是构建参数）。
+
+必须区分的是三类信息源：
+
+| 来源 | 是否可用 | 说明 |
+| --- | --- | --- |
+| 官方仓库的应用源码 / Dockerfile / benchmark.yaml | ✅ 可用 | 白盒审计，机制层面的真相 |
+| 靶场本身（HTTP 响应、报错、页面） | ✅ 必须用 | 实例数据每次重排，flag 只能从这里拿 |
+| 他人的解题记录 / writeup 仓库 | ❌ **禁止** | 例如 `lawneng/XBOW-Validation-Writeups` 之类，看了就等于抄答案 |
+
+**关键：源码给机制，靶场给数据，两者缺一不可。** 已多次遇到「源码默认值在实例里无效」，
+例如 xben-003-24 源码里 flag 用户是 `10052`，实例里是 `10422`。
+
 ## 这一库的特点
 
 - **题面没有 description**（`description` 字段为空字符串），只有编号和难度。判断题型只能靠访问容器。

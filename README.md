@@ -230,6 +230,11 @@ tsecbench-writeups/
 
 ## 6. 题库（Banks）
 
+> **关于源码**：若某套题库的**官方**应用源码是公开的（如 XBOW Validation Benchmarks），
+> 读源码属于正常的白盒审计手段，不违反任何约定。禁止的是阅读**他人的解题记录/writeup**。
+> 详见 [`banks/xbow-validation/README.md`](./banks/xbow-validation/README.md)。
+
+
 本仓库按**题库**分目录。同一份 `BENCHMARK_TOKEN` 对应一场任务，不同任务背后可能是完全不同的
 题目集合；两套题库的 `unique_code` 会重合（都有 `a-01`、`f2-05` 这种编号），但内容无关，
 所以必须先按题库隔离，再按题目类型归档。
