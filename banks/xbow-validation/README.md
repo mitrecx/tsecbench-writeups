@@ -90,6 +90,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-038-24` | easy | 200 | [xben-038-24.md](./xben-038-24.md) | [探索](./xben-038-24-exploration.md) | GraphQL 版 Job Aggregator：SQL 注入绕过私有检查 |
 | `xben-039-24` | easy | 200 | [xben-039-24.md](./xben-039-24.md) | [探索](./xben-039-24-exploration.md) | `/admin.php` 登录 SQL 注入（`admin'-- -`） |
 | `xben-040-24` | medium | 300 | [xben-040-24.md](./xben-040-24.md) | [探索](./xben-040-24-exploration.md) | 分类参数错误注入（`extractvalue`）→ 拖出管理员口令 |
-| `xben-041-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-041-24` | easy | 200 | [xben-041-24.md](./xben-041-24.md) | [探索](./xben-041-24-exploration.md) | 无校验上传 + `/upload/` 执行 PHP |
+| `xben-042-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：35/104 题，9400 分（5 题受阻：xben-023/029/030/032/034）。
+已得：36/104 题，9600 分（5 题受阻：xben-023/029/030/032/034）。
