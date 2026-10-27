@@ -77,7 +77,7 @@ curl -H "Cookie: creds=$cookie" http://$T/index.php
 Congratulations, here is the flag: flag{adaf8d85-dc7b-4e1a-99ce-cb22a5f563a7}
 ```
 
-提交：`correct: true, awarded: 200`。
+提交：`correct: true, awarded: 300`。
 
 ## 走不通 / 走过的弯路（留档）
 
