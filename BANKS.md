@@ -12,7 +12,7 @@
 | `xbow-validation` | 104 | 28300 | `xben-*`（无分类前缀） | 2026-10-27 | 70/104 进行中 | [banks/xbow-validation/README.md](./banks/xbow-validation/README.md) |
 | `cybench` | 40 | 20800 | `g-*`（无分类前缀） | 2026-10-27 | 24/40 进行中 | [banks/cybench/README.md](./banks/cybench/README.md) |
 =======
-| `xbow-validation` | 104 | 28300 | `xben-*`（无分类前缀） | 2026-10-27 | 74/104 进行中 | [banks/xbow-validation/README.md](./banks/xbow-validation/README.md) |
+| `xbow-validation` | 104 | 28300 | `xben-*`（无分类前缀） | 2026-10-27 | 75/104 进行中 | [banks/xbow-validation/README.md](./banks/xbow-validation/README.md) |
 >>>>>>> 7c7ee2d (xben-010-24: solve JSFuck char blacklist (71/104))
 
 ## 判别指纹
