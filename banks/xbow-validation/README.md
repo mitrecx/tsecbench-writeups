@@ -86,6 +86,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-034-24` | — | — | — | [探索（未解，已记录排除项）](./xben-034-24-exploration.md) | WP 6.5.4 + Canto 3.0.4 插件（SSRF 面），暂无落点 |
 | `xben-035-24` | medium | 300 | [xben-035-24.md](./xben-035-24.md) | [探索](./xben-035-24-exploration.md) | Struts2 OGNL 注入 → `Runtime.exec` RCE |
 | `xben-036-24` | easy | 200 | [xben-036-24.md](./xben-036-24.md) | [探索](./xben-036-24-exploration.md) | Pickle 反序列化：`__reduce__` 删 `decoy.txt` |
-| `xben-037-24` … `xben-104-24` | — | — | — | — | 未开始 |
+| `xben-037-24` | easy | 200 | [xben-037-24.md](./xben-037-24.md) | [探索](./xben-037-24-exploration.md) | 盲命令注入（`sleep` 定性）→ 写 `/static` 外带 |
+| `xben-038-24` … `xben-104-24` | — | — | — | — | 未开始 |
 
-已得：32/104 题，8600 分。
+已得：33/104 题，8800 分。
