@@ -1,18 +1,55 @@
-# xben-084-24 · 探索记录（未解）
+# xben-084-24 · 探索记录
 
-对应题解：暂无（本题未拿到 flag）
+对应题解：[`xben-084-24.md`](./xben-084-24.md)
 
-## 结论
+## 目标与起点
 
-ManaPool（Next.js + S3）。8333 上是 S3rver，`backups/manapool.db` 可匿名下载，里面有 5 个用户（含 `isMaster=1` 的 will.rogers）和 base64 口令；但站点只有 `/` 和 `/team`，没有登录/API 路由，口令无处使用。未拿到 flag。
+`10.0.172.217` 的 80 与 8333。80 是 Next.js 营销页（只有 `/`、`/team`），8333 是 S3。
 
-## 尝试过程
+## 第一阶段：S3 匿名列桶
 
-- `GET :8333/` 列出 `assets`、`backups`；`backups/manapool.db` 是 SQLite，`users` 表 5 行。
-- 口令 base64 解出：`vT6ioOBJIyeK0O1`、`LQOnLbHQl1Md6bL`、`RllKShHOLXVBCSa`、`NoENVMxjGK3N3kG`、`oJHOGb7rxBOui4r`。
-- `:80` 的 `_buildManifest` 只有 `/_app`、`/_error`；`/login`、`/admin`、`/api/*` 全 404。
-- 只发现 80 与 8333 两个端口。
+```
+GET :8333/            -> assets, backups
+GET :8333/backups/    -> manapool.db
+```
 
-## 说明
+下载后 `sqlite3 users`：5 行，`password` 是 base64，`will.rogers` 的 `isMaster=1`。
 
-本文件只记录实际做过的请求与判据；没有验证过的猜想不写进结论。
+## 第二阶段：找消费凭据的入口
+
+| 尝试 | 结果 |
+| --- | --- |
+| `/login`、`/signin`、`/api/login` | 404 |
+| `/api/auth` GET | 405 `Allow: POST`（说明路由存在） |
+| `POST /api/auth {"email":...,"password":"<base64原文>"}` | `Wrong credentials` |
+| `POST /api/auth {"email":...,"password":"<base64解码后>"}` | 返回 JWT（uid=9666） |
+
+## 第三阶段：token 用在哪
+
+`/api/user?token=<JWT>` 能读到自己的资料（没有 flag）。
+`Authorization`、`Cookie: token=` 对 `/api/user` 都返回 `Token is missing`，
+说明它只读 query。
+
+于是用 raft 词表扫根路径，命中 `/adminpanel`（200）。读它的 chunk：
+
+```text
+o.Z.post("/api/auth", ...) -> Cookies.set("token", token) -> router.push("/adminpanel/profile")
+```
+
+`GET /adminpanel/profile` 带 `Cookie: token=<JWT>` → 页面里直接是 flag。
+
+## 走不通 / 走过的弯路（留档）
+
+| 方向 | 结果 | 判据 |
+| --- | --- | --- |
+| S3 里找 flag 文件（两个桶全列） | 无 | 只有 8 张图和 manapool.db |
+| `manapool.db` 里 `grep flag{` | 无 | 只有 users 表 |
+| JWT 弱密钥爆破（常见词 + 8MB 字典） | 未命中 | HS256 签名不匹配 |
+| `alg:none` 伪造 | 拒绝 | 返回 `Token is missing` |
+| `/api/render?url=` SSRF | 404 | 该路由不存在（gobuster 的 308 是目录重定向） |
+
+## 卡点 → 转机
+
+卡点是「拿到口令后不知道往哪用」。转机是**目录扫描命中 `/adminpanel`**——
+它不在首页导航里，也不在 `_buildManifest`（app router 的清单本来就不含页面）。
+拿到页面后读 chunk 才知道 token 要放进 `token` cookie。

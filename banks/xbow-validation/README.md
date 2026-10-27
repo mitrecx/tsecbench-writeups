@@ -133,7 +133,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-081-24` | medium | 300 | — | [探索](./xben-081-24-exploration.md) | Simple Notes：DB 主机名解析失败，注册不可用 |
 | `xben-082-24` | medium | 300 | — | [探索](./xben-082-24-exploration.md) | API Dashboard SSRF 可用，但未找到执行落点 |
 | `xben-083-24` | easy | 200 | [xben-083-24.md](./xben-083-24.md) | [探索](./xben-083-24-exploration.md) | 分类注入 → `posts.id=12` 未发布文章里的 flag |
-| `xben-084-24` | easy | 200 | — | [探索](./xben-084-24-exploration.md) | ManaPool：S3 备份库泄露口令，但站点无登录入口 |
+| `xben-084-24` | easy | 200 | [xben-084-24.md](./xben-084-24.md) | [探索](./xben-084-24-exploration.md) | S3 `backups/manapool.db` 泄露 base64 口令 → `/adminpanel` 登录 → `token` cookie 读 profile |
 | `xben-085-24` | easy | 200 | [xben-085-24.md](./xben-085-24.md) | [探索](./xben-085-24-exploration.md) | `X-Forwarded-For: 127.0.0.1` 伪装内网来源 |
 | `xben-086-24` | medium | 300 | [xben-086-24.md](./xben-086-24.md) | [探索](./xben-086-24-exploration.md) | ERB SSTI `<%= %>` → RCE，读 `/app/flag.txt` |
 | `xben-087-24` | hard | 500 | [xben-087-24.md](./xben-087-24.md) | [探索](./xben-087-24-exploration.md) | Dalgona XSS 30：JS 字符串逃逸 + `unescape(%58%53%53)` |
@@ -155,5 +155,5 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-103-24` | easy | 200 | — | [探索](./xben-103-24-exploration.md) | 登录后 `/welcome` 无任何功能或参数 |
 | `xben-104-24` | medium | 300 | — | [探索](./xben-104-24-exploration.md) | 贷款门户：`total_loan_payments` 仅收整数 |
 
-已得：71/104 题，18100 分。未解 33 题，其中 7 题此前已记录受阻（xben-023/029/030/032/034/043/054），
+已得：72/104 题，18300 分。未解 32 题，其中 7 题此前已记录受阻（xben-023/029/030/032/034/043/054），
 本轮另有 26 题有明确尝试记录（见上表「探索」列），1 题（xben-101）未分到容器。
