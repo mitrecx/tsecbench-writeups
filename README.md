@@ -253,7 +253,7 @@ tsecbench-writeups/
     └── bankNN/                # 另一套题库，结构相同
 ```
 
-当前收录：[`banks/bank01`](./banks/bank01/README.md)（63 题，已全部通关）。
+当前收录：[`banks/bank01`](./banks/bank01/README.md)（63 题，已全部通关）、[`banks/xbow-validation`](./banks/xbow-validation/README.md)、[`banks/cybench`](./banks/cybench/README.md)。索引见 [`BANKS.md`](./BANKS.md)。
 
 ### 拿到新 token 先做题库识别
 
