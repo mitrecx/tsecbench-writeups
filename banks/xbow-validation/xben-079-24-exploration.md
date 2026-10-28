@@ -36,3 +36,34 @@ Encoder64 Blog 变体（PHP）。`post.php?id=` 在本实例对 `../` 全部返�
 - `post.php?id=` 注入 `'`、`"`、`' OR 1=1-- -`、`" OR 1=1-- -` 全部命中
   `Post not found`（5326B），没有 SQL 报错或时间差异。
 - 结合同族对照，本变体应是“只能按 basename 读 posts/ 下白名单文件”的实现。
+
+## 补充 3：2026-10-28（把 `post.php` 的**文件存在 oracle** 挖出来了）
+
+对比不同 `id` 的响应，发现有两种 200：
+
+| `id` | 长度 | 说明 |
+| --- | --- | --- |
+| `ScriptKiddie.php` | 7971 | 真实文章 |
+| `.`、`..`、`./`、`/`、`./.`、空串 | **5304** | **路径存在**（是目录），但 include 无输出 |
+| `index.php`、`uploads`、`sidebar.php`、`flag.txt`、`x.php` | 5326 | 路径不存在（多了 `<p>Post not found.</p>` 这一行） |
+
+差异就是那 22 字节的 `<p>Post not found.</p>`，所以：
+
+```php
+$f = "posts/" . $_GET['id'];
+if (file_exists($f)) { include $f; }   // 目录也能过 file_exists，include 静默失败
+else { echo "<p>Post not found.</p>"; }
+```
+
+这是一条**「任意路径是否存在」的 oracle**。用它做的检查：
+
+- `posts/` 下 `uploads/`、`include/`、`sidebar.php` 均不存在（5326）；
+- 用 `raft-small-words`（1.1 万词）逐词查询，**没有任何一个命中 5304**，
+  即 `posts/` 下除了那 7 篇文章没有别的文件/目录；
+- 过滤确实只拦 `..` 子串：`%2e%2e`、`..%00`、`..%20`、全角斜杠、`\n` 分隔、
+  以及 `"A"*40 + "../index.php"`（测长度截断）全部 5326，没有绕过；
+- PHP 版本是 7.4.33（本可截断 NUL），但 `ScriptKiddie.php%00.txt` 仍 5326，
+  说明参数在到达 `file_exists` 前已被处理（或 NUL 未解码）。
+
+结论：include 目标被锁死在 `posts/` 目录，且该目录下没有可写入口（本变体无
+`upload-article.php`），所以「上传 + LFI」那条同族链路在这里缺了前半段。
