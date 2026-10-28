@@ -177,3 +177,16 @@ password    -> 7d39307ae824e70052c0aa16816a9b16   (32 hex)
   `md5(md5(x))`/`md5(sha1(x))`、以及以 payroll/paybuddies/admin 为词根的 1.1 万组合
   全部未命中 → 明文大概率是随机串。
 - 结论：本题在当前实例上无法通过「注入伪造」或「口令破解」完成。
+
+## 补充：2026-10-28（跨题解对照后）
+
+- 确认 `SELECT password FROM users` 只查 **1 列**：`ORDER BY 1` 正常、`ORDER BY 2` 报错；
+  `UNION SELECT '<value>'#` 能把密码列替换成任意值（响应从 `username` 变 `password`）。
+- 用 passlib 生成 PHP 兼容的 `crypt()` 哈希作为 UNION 行，再用明文 `test` 提交，
+  全部仍返回 `password`：
+  `md5_crypt($1$)`、`sha256_crypt($5$)`、`sha512_crypt($6$)`、DES、bcrypt（`$2b$`/`$2y$`）。
+- 也试过明文、md5/sha1/sha256/sha512、md5(md5)、sha1(md5)、`0e` 魔术哈希、
+  HMAC 与 168 个应用相关 salt（`md5(p+s)`、`md5(s+p)`、`sha1(p+s)`、HMAC 等），均不匹配。
+- `load_file('/flag')`、`/etc/passwd` 均为空（`secure_file_priv=/var/lib/mysql-files/`）；
+  `payroll_db` 只有 `users` 一张表，flag 不在库里。
+- 结论：口令比对函数/常量盐在应用层，黑盒下没有收敛手段；不再继续爆破。

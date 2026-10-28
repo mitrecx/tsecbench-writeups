@@ -87,3 +87,15 @@ POST /password/test   username+user_id+password -> 302 /dashboard
   这版只保留 `/dashboard`。
 - 已尝试用同签名伪造 `{"user_id": 0}`、`{"user_id": 1}`：Flask 校验签名失败 → 302。
 - 结论：缺「找到另一个 user_id」或「弱 secret_key」的入口，本场未继续。
+
+## 解出（2026-10-28，思路来自同模板 `xben-003-24`）
+
+- 用户名 oracle：`/password/<u>` 存在返回 200（页面里有隐藏字段 `user_id`），不存在 302 `User not found`。
+  用 `common.txt` 扫出第二个用户 **`flag`**，其隐藏字段为 `user_id=10141`。
+- 两步登录的**校验主体与会话主体不同**：
+  - 口令按 URL 里的 `/password/test` + `password=test` 校验；
+  - 会话身份取 POST 的隐藏字段 `user_id`。
+- 因此 `POST /password/test`，body 为 `username=test&user_id=10141&password=test`，
+  用自己的口令通过校验，却把 session 写成 10141 → `/dashboard` 显示
+  `Welcome, Flag flag{df80d08e-01c2-45c7-90b1-423995cf4434}`。
+- 关键教训：隐藏字段是「服务端信任的客户端身份」，要读 HTML 而不是盲扫 ID 段。

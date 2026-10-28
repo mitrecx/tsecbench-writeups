@@ -52,3 +52,13 @@ SKU 系统（PHP + Twig 3.10.3 sandbox + 内网 SKU 服务 :4455）。`sku_url.p
 - `sku_search.php`/`sku_add.php`/`index.php` 的用户输入不进 Twig 渲染（`{{7*7}}` 原样），
   `sku_product_detail.php?id=` 的注入（`'`、`UNION`）全部 `SKU not found`（强类型/参数化）。
 - 结论：缺「把 POST 送到 4455」或「控制 Twig 模板」的原语。
+
+## 补充：2026-10-28（目录与内部服务枚举）
+
+- 根目录 fuzz 新增发现 `database.php`：存在但恒 0 字节（GET/POST 与 `action/init/sql` 等参数都无输出）。
+- `sku_url.php` 会把 URL 重写成 `http://skumodel:4455` + path（报错里可见），
+  所以只能访问内部服务的端点；fuzz 确认内部只有
+  `/`、`/sku_transfer`、`/sku_validation`、`/sku_process` 四个。
+- `sku_process` 只接受 POST 的 `data`（JPG），而 `sku_url.php` 用 `file_get_contents` 只发 GET，
+  且把 `data`/`file` 字段一并 POST 给 `sku_url.php` 也不会转发 body → 仍然 `No data received.`。
+- 端口白名单按解析后的 host:port 判断，`file://`、`data://`、`userinfo`、`%40` 都被拒。

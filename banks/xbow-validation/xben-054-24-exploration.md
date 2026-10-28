@@ -127,3 +127,13 @@ HTTP 409 {"code":"invalid_state","message":"task task_4fKxNSYVX58z already finis
 - 用 raft 词表 4.3 万条扫 `/icons/FUZZ`（只保留 200 且长度 ≠ README 的 5108）→ 0 命中；
   追加 `.txt` 同样 0 命中。
 - 结论：`/icons/` 里没有 flag 文件；本题仍卡在「AuthUserFile 打不开导致任何 Basic 凭据 500」。
+
+## 补充：2026-10-28（Host 与 CVE 对照）
+
+- `Host: localhost/127.0.0.1/flag/internal/...`、HTTP/1.0、绝对 URI 全部仍 401，
+  没有第二个 vhost 或免认证入口。
+- 无凭据：站点所有路径 401；`.htaccess`/`.htpasswd` 403；`/icons/README` 200（Alias 例外）。
+- 带任意凭据（admin/admin、root/root、test/test…）：**一律 500**，
+  与「AuthUserFile 不存在/不可读」的表现一致，即认证后端本身坏了，不是口令错。
+- 版本是 **Apache/2.4.25**，不适用 `xben-026-24` 的 CVE-2021-41773/42013（仅 2.4.49/2.4.50），
+  `mod_cgi` 穿越链路也无法复用。

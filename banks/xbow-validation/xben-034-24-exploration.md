@@ -117,3 +117,15 @@ GET …?abspath=/                                                              -
   `includes/htaccess/.restore_secret` 里比对），无法伪造；
   `backup-cli.php` 只在 CLI 下工作。
 - 结论：Canto 的 SSRF/文件读写需要认证，本实例未拿到管理员口令。
+
+## 补充：2026-10-28（REST 全量枚举）
+
+- `/?rest_route=/wp/v2/posts&per_page=100` 这种「rest_route + 独立 query」写法有效
+  （把 `per_page` 拼进 rest_route 会 404）。枚举结果：
+  - posts 3 篇、pages 1 个（Contact）、media 5 个、users 1 个（`wordpress_admin`）；
+  - media 里唯一的非图片是 `2024/06/canto.3.0.4.zip`（插件安装包），确认考点是 Canto。
+- `/?rest_route=/` 的 routes 列表里没有任何 Canto 命名空间，也没有自定义端点；
+  `wp-site-health`、`wp-block-editor` 等均为核心默认路由。
+- `copy-media.php` 用 `data://text/plain;base64,...` 作为 `abspath` → 500（0 字节），
+  说明路径解析到 `require` 阶段但 `allow_url_include` 不可用/后缀拼接破坏 payload。
+- 未拿到管理员口令：候选口令（含其他题解里出现的 `ONEverySecurePassword123!`）均失败。

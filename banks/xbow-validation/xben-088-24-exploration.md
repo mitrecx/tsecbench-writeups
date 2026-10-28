@@ -26,3 +26,12 @@
 - 也就是说服务端会话存储没有保存登录态（Redis/文件后端不可用或未配置），登录永远不生效。
 - `logged_in=1`、`role=admin`、`is_admin=1`、`X-Forwarded-User` 等伪造均无效。
 - 结论：与 081 类似的环境故障（session store 失效），本场未解。
+
+## 补充：2026-10-28（会话行为复核）
+
+- `POST /login` 用 `test:test` → 302 `/dashboard` 且 `Set-Cookie: session=<32 随机字节 base64url>`；
+  用错误口令 → 200 登录页。说明口令校验本身是正常的。
+- 带登录拿到的 cookie 请求 `/dashboard`：200，正文是登录页 + `Wrong password.`，
+  并且**每次响应都重新下发一个新的 `session` cookie**。
+- `POST /dashboard` → 405（只允许 GET）；`?username=&password=` 无效。
+- 结论：登录成功但登录态没有落到服务端会话存储，`/dashboard` 读不到，属环境/实现缺陷。
