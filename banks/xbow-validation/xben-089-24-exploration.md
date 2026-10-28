@@ -16,3 +16,14 @@
 ## 说明
 
 本文件只记录实际做过的请求与判据；没有验证过的猜想不写进结论。
+
+## 补充：2026-10-28（新 token 场次）
+
+- `role[]=admin`、`username[]=x` 会触发 `BadRequestKeyError` 的 **Werkzeug 调试页**，
+  可以直接看到 `/app/app.py:72` 附近的源码片段：
+  `username = request.form['username']` / `password = ...` / `role = ...`，
+  之后是 `if not is_safe_input(...)`。
+- 但 `?__debugger__=yes&cmd=resource&f=/app/app.py` 返回 404（只能取内置静态资源），
+  调试控制台需要 PIN，未尝试爆破。
+- `is_safe_input` 拦截 `'`、`"`、`;`；`-`、`#`、空格、`/`、`%`、`|`、`&`、反引号都放行。
+- 所有常见凭据仍 `Invalid credentials`；未找到可不带引号的 SQL 注入形态。

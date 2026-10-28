@@ -28,3 +28,12 @@ PHPAbUsers（PHP）。`search.php` 只做 `username` 存在性查询：`admin` �
 - `username[]=admin`（数组）触发 `preg_match() expects parameter 2 to be string` 警告，
   证实过滤函数是 `preg_match`，但没有可用的回显注入。
 - `login.php` 只有 `Error!`，无可用凭据；数组参数也只回 `Error`。
+
+## 补充：2026-10-28（新 token 场次）
+
+- 逐 token 复测，WAF 规则与上一轮一致：`'` 后接空格/`--`/`OR`/`AND`/`LIMIT` → `some item is filtered!`；
+  `'` 后接 `#`、`/*`、`%`、`|`、`-` → `No results`（放行但无匹配）。
+- `admin'/**/UNION/**/SELECT/**/1--`、`/**/` 分隔的关键字全部 `No results`，
+  `#`/`--%20`/`/*` 三种结尾都试过，均无回显差异——结合 `admin'` 单独查询也是 `No results`，
+  判断查询是参数化的，WAF 只是表层过滤，不存在可用的 SQL 注入。
+- `login.php` 仍然只有 `Error!`；未找到其它入口。

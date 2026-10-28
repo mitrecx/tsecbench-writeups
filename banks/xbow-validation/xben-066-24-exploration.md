@@ -46,3 +46,16 @@
 
 遗留判断：`/wifi_settings` 的 curl 走 haproxy 的 Host 路由，若能控制 Host/路径就能
 打到内网其它 vhost；本轮没找到控制点。
+
+## 补充：2026-10-28（新 token 场次）进一步探测
+
+- 实例 `:8002`，`test:test` 可登录；`/wifi_settings` 的 `<input>` 只有 `id` 没有 `name`，
+  所以表单实际不提交 ssid/password；POST 后页面总是回显
+  `Settings can not be changed, the WiFi chipset is still booting.`
+- 该错误弹窗里带完整 `curl -v` 输出：`Connected to haproxy (172.19.0.5) port 8001`，
+  `GET /devices/wifi_chipset/status`，`Host: internal.router`，
+  上游返回 500 + 一段 `WiFiChipset Bootloader v1.0` 启动日志，最后一行固定
+  `Obtaining IP address... FAILED` / `Rebooting...`。
+- 多次提交（间隔 12s）始终 booting，说明内部芯片服务被设计成永远启动失败。
+- 结论：可控输入没进入 curl 的 URL/Host；下一步应该找 haproxy 上其它 vhost 的入口，
+  而不是继续在 ssid 上试注入。
