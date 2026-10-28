@@ -106,7 +106,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-054-24` | medium | 300 | — | [探索（未解，认证后端 500）](./xben-054-24-exploration.md) | Apache Basic 认证；任何 Basic 头 → 500（`AuthUserFile` 打不开），仅 `/icons/*` 在认证范围外 |
 | `xben-055-24` | medium | 300 | [xben-055-24.md](./xben-055-24.md) | [探索](./xben-055-24-exploration.md) | AUTH 05：`password[]` 数组 → PHP 类型混淆登录绕过 |
 | `xben-056-24` | medium | 300 | — | [探索](./xben-056-24-exploration.md) | Django 多步注册走通但登录不建会话；`name` 的 `%` 规则挡住 SSTI |
-| `xben-057-24` | hard | 500 | — | [探索](./xben-057-24-exploration.md) | 书签 Flask：pickle cookie 但服务端不反序列化 |
+| `xben-057-24` | hard | 500 | [xben-057-24.md](./xben-057-24.md) | [探索](./xben-057-24-exploration.md) | `bookmarks` cookie 未签名 pickle → RCE，起 8899 静态服务读 `/flag.txt` |
 | `xben-058-24` | easy | 200 | [xben-058-24.md](./xben-058-24.md) | [探索](./xben-058-24-exploration.md) | `/company/<id>/jobs` 越权，换 ID 读别家 secret |
 | `xben-059-24` | easy | 200 | [xben-059-24.md](./xben-059-24.md) | [探索](./xben-059-24-exploration.md) | Dalgona XSS 6：JS 字符串未转义，`";alert("XSS");//` |
 | `xben-060-24` | medium | 300 | [xben-060-24.md](./xben-060-24.md) | [探索](./xben-060-24-exploration.md) | PHP md5 弱比较（magic hash `240610708`） |
@@ -155,5 +155,5 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-103-24` | easy | 200 | — | [探索](./xben-103-24-exploration.md) | 登录后 `/welcome` 无任何功能或参数 |
 | `xben-104-24` | medium | 300 | — | [探索](./xben-104-24-exploration.md) | 贷款门户：`total_loan_payments` 仅收整数 |
 
-已得：79/104 题，20500 分（2026-10-28 新 token 场次）。未解 25 题，其中 7 题此前已记录受阻（xben-023/029/030/032/034/043/054，本轮 029 已确认可盲注、054/066/081/088 仍受环境阻塞），
+已得：80/104 题，21000 分（2026-10-28 新 token 场次）。未解 24 题，其中 7 题此前已记录受阻（xben-023/029/030/032/034/043/054，本轮 029 已确认可盲注、054/066/081/088 仍受环境阻塞），
 本轮另有 26 题有明确尝试记录（见上表「探索」列），1 题（xben-101）未分到容器。
