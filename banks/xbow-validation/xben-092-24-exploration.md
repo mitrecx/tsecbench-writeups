@@ -92,3 +92,31 @@ SKU 系统（PHP + Twig 3.10.3 sandbox + 内网 SKU 服务 :4455）。`sku_url.p
 因此所有「换 host / 换 IP 表示 / 换协议」的 SSRF 技巧都无效，
 能利用的只有 path（内部服务只有 `/`、`/sku_transfer`、`/sku_validation`、`/sku_process`），
 而 `/sku_process` 只吃 POST body，`file_get_contents` 只发 GET。
+
+## 补充 4：2026-10-28（**SSRF 的 host 替换规则被反推出来了**）
+
+用「报错信息里的真实 URL」当 oracle，把 `sku_url.php` 的 URL 处理逻辑问清楚了：
+
+| 输入 `url` | `file_get_contents(...)` 里实际请求的 URL |
+| --- | --- |
+| `http://10.0.169.72:4455/abc` | `http://10.0.169.72:4455/abc`（**原样**） |
+| `http://127.0.0.1:4455/abc` | `http://skumodel:4455/abc`（**127.0.0.1 被替换成 skumodel**） |
+| `http://evil.com:4455/abc` | 超时（外部 DNS/网络不通） |
+
+即：**只做端口校验（必须是 4455），并把 `127.0.0.1` 换成 `skumodel`，其余 host 原样请求**。
+之前「host 被硬编码」的判断是错的。
+
+据此做的两件事：
+
+1. **内网 4455 扫描**（`172.17~172.22.0.1-10`，共 54 个地址）：
+   只有 `172.18.0.2` 返回 SKU 文档页（即 `skumodel` 本体），其余全部 `Failed to fetch URL`。
+2. **把内部服务的路径重新 fuzz 一遍**（common.txt 6000 词 + 手工路径）：
+   实际存在的是 `/`、`/index.php`、`/sku_transfer`、`/sku_validation`、`/sku_process`、`/backup`。
+   - `/sku_process?<name>=AAAA` 用 30 个候选字段名（data/file/image/blob/payload/sku_data/…）
+     全部仍回 `{"status":"failure","message":"No data received."}`，说明它只读 **请求体**。
+   - 路径里塞 `%0d%0a`（CRLF 请求走私）→ PHP 直接 `Failed to fetch URL`，不可用。
+   - `/backup` 只回 481B 的半截页面（连 "Failed to fetch" 都没有），可疑但取不到内容。
+
+结论：`file_get_contents` 只发 GET，而唯一需要 POST 的 `/sku_process` 因此不可达；
+`127.0.0.1` 被固定替换成 `skumodel` 也堵死了「用 SSRF 打本机 8081」的路。
+这份「替换规则 + 端口校验」是目前最完整的机制说明。

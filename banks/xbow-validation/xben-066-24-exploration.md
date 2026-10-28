@@ -64,3 +64,36 @@
 
 - `start` 连续多次返回 `{"code":"internal_error"}`，始终没有分到容器。
 - 结论：资源侧故障，本场无法复现。
+
+## 补充：2026-10-28（curl 回显全文与字段/注入复核）
+
+把 POST `/wifi_settings` 的错误弹窗原样展开，能看到完整的 curl 交互：
+
+```text
+*   Trying 172.18.0.5:8001...
+* Connected to haproxy (172.18.0.5) port 8001 (#0)
+> GET /devices/wifi_chipset/status HTTP/1.1
+> Host: internal.router
+> User-Agent: curl/7.74.0
+> Accept: */*
+<
+< HTTP/1.1 500 INTERNAL SERVER ERROR
+< Server: Apache/2.4.67 (Debian)
+< X-Forwarded-Host: internal.router
+< X-Upstream-Proxy: mitmproxy (6.0.2)
+< Via: haproxy (2.0.5)
+```
+
+- 上游链路是 **haproxy → mitmproxy 6.0.2 → Apache**，按 Host `internal.router` 路由；
+  返回的 500 正文是 `WiFiChipset Bootloader v1.0` 的启动日志（固定以失败结尾）。
+- **`ssid`/`password`/`security` 三个字段完全不进请求**：分别塞
+  `../../../../flag`、`url`、`host`、`endpoint`、`path`、`target` 后，
+  回显里的 `> GET /devices/wifi_chipset/status` 与 `> Host: internal.router` 一字不变。
+- **命令注入排除**：`; sleep 5`、`$(sleep 5)`、`` `sleep 5` ``、`| sleep 5`、`&& sleep 5`
+  分别塞三个字段，响应时间恒 0.13s（基线 0.13s）。
+- `?debug=` 试了 `session/config/env/source/1/true/all/vars/globals/request/headers/secret/key/flag/admin`，
+  响应长度全部等于基线 5040（`?debug=session` 也没有多打印任何东西）。
+- 登录名**大小写不敏感**（`Test:test`、`TEST:test` 都能登录），但 `admin` 试了 rockyou top 2 万仍失败；
+  `/admin_panel` 始终只多一个 `Only administrator users can open this section.` 的 modal。
+- 结论：唯一的外部动作是这条**完全固定的内网 GET**，可控输入进不去 URL/Host/命令，
+  因此「让芯片 boot 成功」和「打到别的 vhost」都没有入口。
