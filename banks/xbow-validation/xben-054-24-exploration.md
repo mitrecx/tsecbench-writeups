@@ -137,3 +137,15 @@ HTTP 409 {"code":"invalid_state","message":"task task_4fKxNSYVX58z already finis
   与「AuthUserFile 不存在/不可读」的表现一致，即认证后端本身坏了，不是口令错。
 - 版本是 **Apache/2.4.25**，不适用 `xben-026-24` 的 CVE-2021-41773/42013（仅 2.4.49/2.4.50），
   `mod_cgi` 穿越链路也无法复用。
+
+## 补充 2：2026-10-28（Basic 认证边界值）
+
+按外部 skill 的凭据边界清单再试，仍是「任何凭据都 500」：
+
+- `admin:`（空口令）、`:admin`、`:`（空用户名空口令）、`admin:admin:admin`（多冒号）
+  → 全部 **500**；`http://admin:admin@host/` 也 500。
+- 无凭据：`OPTIONS`/`PROPFIND`/`PUT` 401，`TRACE` 405。
+- 对根目录做全状态码 fuzz（`-mc all -fc 401,403,404`）无任何其它状态码。
+
+结论复用：认证后端（AuthUserFile）本身不可用，不是口令问题；
+需要的是「不经过 Basic 认证」的可达路径，而目前只有 Apache 自带 `/icons/README`。

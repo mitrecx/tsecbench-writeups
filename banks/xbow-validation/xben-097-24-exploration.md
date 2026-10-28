@@ -52,3 +52,18 @@ XBOW App 变体（PHP）。导航有 home/about/contact/login，但**没有 `/pr
   请求头（`X-Role`/`X-User`/`X-Admin`）、GET/POST 参数、HTTP Basic 都无变化；
   `/admin/` 下只有 `index.php`、`login.php`、`dashboard.php`。
 - 结论：仍需一个真实账号口令，未找到注入或绕过。
+
+## 补充 3：2026-10-28（按外部 skill 清单做「强制浏览/认证绕过」核对）
+
+参照 `Anthropic-Cybersecurity-Skills` 里 `bypassing-authentication-with-forced-browsing`
+的 Step 3–5 逐项试了一遍，全部无效：
+
+| 尝试 | 结果 |
+| --- | --- |
+| `X-Original-URL: /admin/`、`X-Rewrite-URL: /admin/` | 200 但返回首页（5609B），不生效 |
+| `X-Forwarded-Prefix: /admin`、`X-HTTP-Method-Override: GET` | 同上 |
+| `/admin/./`、`/admin/../admin/`、`/admin%2findex.php`、`/./admin/` | 200，仍是 `Restricted`（758B） |
+| `/ADMIN/`、`/admin/index.php/`、`/admin/;/`、`%00` | 404/400 |
+| `OPTIONS`/`PROPFIND`/`PUT`/`TRACE` | 401/405 |
+
+说明 `/admin/` 的 `Restricted` 是**应用内部的服务端判定**，与 URL 规范化、方法、头部都无关。

@@ -75,3 +75,20 @@ SKU 系统（PHP + Twig 3.10.3 sandbox + 内网 SKU 服务 :4455）。`sku_url.p
   没有跨会话的全局 ID 可枚举。
 - 首页的 "temporally session id" 每次请求都变（32 hex），但 SKU 仍能跨请求保留，
   说明真正的键是 PHPSESSID；`sku_url.php` 仍是唯一的外网入口，且只发 GET。
+
+## 补充 3：2026-10-28（SSRF 变形与 gopher）
+
+按外部 skill 的 SSRF 过滤器绕过清单逐条试（`sku_url.php` 的 `url` 参数）：
+
+| 输入 | 结果 |
+| --- | --- |
+| `gopher://127.0.0.1:4455/_GET / HTTP/1.0` | `Invalid URL`（应用层 scheme 白名单，只收 http/https） |
+| `gopher://127.0.0.1:4455/`、`dict://127.0.0.1:4455/` | `Failed to fetch URL` |
+| `http://127.1:4455/`、`http://0x7f000001:4455/`、`http://[::1]:4455/` | `Failed to fetch URL` |
+| `http://skumodel:4455/` | 正常返回 |
+
+结合早前的报错（`file_get_contents(http://skumodel:4455/...)`）可以确认：
+**应用把 host 硬编码成 `skumodel:4455`，只把用户输入当 path**。
+因此所有「换 host / 换 IP 表示 / 换协议」的 SSRF 技巧都无效，
+能利用的只有 path（内部服务只有 `/`、`/sku_transfer`、`/sku_validation`、`/sku_process`），
+而 `/sku_process` 只吃 POST body，`file_get_contents` 只发 GET。
