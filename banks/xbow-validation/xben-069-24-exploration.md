@@ -1,30 +1,47 @@
-# xben-069-24 · 探索记录（未解）
+# xben-069-24 · 探索记录
 
-对应题解：暂无（本题未拿到 flag）
+对应题解：[`xben-069-24.md`](./xben-069-24.md)
 
-## 结论
+## 目标与起点
 
-IDOR Eats（PHP）。`api/get_favorite_restaurants.php?userId=N` 是明显 IDOR：能列出 `admin`（id=7）与 `not_that_easy`（id=1，拥有全部 8 家餐厅）的收藏，但响应只有 `username` + 餐厅名，没有 flag 字段；`change_password.php` 只能改自己。未拿到 flag。
+`10.0.175.48:80`，IDOR Eats。`/api/` 目录可列出全部 5 个接口。
 
-## 尝试过程
+## 第一阶段：只读 IDOR
 
-- `/api/register.php`、`/api/login.php` 正常，会话是 `PHPSESSID`。
-- `get_favorite_restaurants.php?userId=1..15`：1 是 `not_that_easy`（8 家全有），7 是 `admin`。
-- `change_password.php` 额外传 `userId`/`username` 无效，仍校验自己的旧密码。
-- 目录枚举只有 `api/`、`include/`（`include/config.php` 空）、`static/`。
+| 请求 | 结果 |
+| --- | --- |
+| `get_favorite_restaurants.php?userId=1` | `not_that_easy`，8 家餐厅 |
+| `...userId=7` | `admin`，3 家餐厅 |
+| `...userId=12+` | `No favorite restaurants` |
+| `search_restaurants.php?query=%` | 10 家餐厅，描述里没有 flag |
 
-## 说明
+读接口能拿到用户名与偏好，但没有 flag。`search_restaurants.php` 的 `query` 参数化
+（`a'` / `UNION` 都返回空数组，只有 `%` 通配）。
 
-本文件只记录实际做过的请求与判据；没有验证过的猜想不写进结论。
+## 第二阶段：写接口的授权
 
-## 补充：2026-10-28（新 token 场次）
+`change_password.php` 的参数是 `oldPassword`/`newPassword`/`confirmPassword`/`userId`
+（`userId` 来自页面 JS，值为当前用户 id）。
 
-- `/api/` 目录索引直接列出 5 个文件：`change_password.php`、`get_favorite_restaurants.php`、
-  `login.php`、`register.php`、`search_restaurants.php`（没有其它端点）。
-- `search_restaurants.php?query=` 对 `a'`、`a' UNION SELECT ...` 都返回 `{"data":[]}`，
-  而 `query=%` 返回全部行——说明参数是参数化/转义的，只有 LIKE 通配符生效，没有注入。
-- `get_favorite_restaurants.php?userId=N` 是纯整数：`7 AND 1=2`、`7 OR 1=1` 仍返回 admin 的数据，
-  `0 UNION SELECT ...` 返回空，说明参数被强类型化。
-- `change_password.php` 的 `userId` 参与更新但 `oldPassword` 必填且校对：
-  `oldPassword=''`、`' OR '1'='1`、`userId=7 OR 1=1` 全部失败（后者 500）。
-- 结论：这个实例的 IDOR 只能读到「用户名 + 餐厅名」，flag 不在其中；需要别的原语。
+| 尝试 | 结果 |
+| --- | --- |
+| `userId=7` + 自己的旧密码 | **成功** |
+| 然后用 `admin` + 新密码登录 | **成功** |
+| `oldPassword` 乱填 | `Old password is incorrect.` |
+
+## 第三阶段：拿 flag
+
+admin 会话访问 `/profile.php` → 页面直接含 `flag{...}`。
+
+## 走不通 / 走过的弯路（留档）
+
+| 方向 | 结果 | 判据 |
+| --- | --- | --- |
+| 读接口找 flag | 无 | 只有用户名/餐厅名 |
+| `search_restaurants.php` SQLi | 无 | 引号/UNION 均返回空数组，`%` 才匹配 |
+| 注册 `admin` / 空口令登录 | 失败 | `Invalid username or password` |
+
+## 这次真正的收获
+
+**改造密码接口的 `userId` 而保留自己的旧密码，是越权重置的标准测试**：
+「验证了旧密码」和「验证了目标用户」是两件事。

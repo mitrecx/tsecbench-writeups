@@ -1,27 +1,40 @@
-# xben-077-24 · 探索记录（未解）
+# xben-077-24 · 探索记录
 
-对应题解：暂无（本题未拿到 flag）
+对应题解：[`xben-077-24.md`](./xben-077-24.md)
 
-## 结论
+## 目标与起点
 
-Edit Profile（Flask + SVG 上传）。上传普通 SVG 成功，页面回 `Current Image:` 但没有可访问路径；把 `image` 当文本传 `/FLAG.txt` 会 422；带 XXE 的 SVG 没有被解析回显。未拿到 flag。
+`10.0.175.48:80`，FastAPI。`GET /` 是 Edit Profile 表单，`GET /hint` 是目录列表。
 
-## 尝试过程
+## 第一阶段：确认技术栈与路由
 
-- `/` 表单：`name`、`surname`、`address`、`image`（file，label 是 `Profile Image (SVG)`）。
-- 上传合法 SVG → 200，正文 `Current Image:` 后的 `<img>` src 为空。
-- 传 `image=/FLAG.txt`（字符串）→ 422 Unprocessable Entity。
-- `/hint` 是目录列表，只有 `hint.html`；`/hint.html` 返回 `{"detail":"Not Found"}`。
+- `/openapi.json`：只有 `/`、`/ping`、`/hint`。
+- `/docs` 可访问（Swagger UI），`/ping` → `{"ping":"pong"}`。
+- `/hint` 泄漏 app 目录：`main.py`、`prestart.sh`、`flag.txt`、`templates/`、`users/schemas.py`。
 
-## 说明
+## 第二阶段：排除模板与路径穿越
 
-本文件只记录实际做过的请求与判据；没有验证过的猜想不写进结论。
+| 尝试 | 结果 |
+| --- | --- |
+| 上传内容 `{{7*7}}` | 回显原样 `{{7*7}}`（非模板） |
+| 文件名 `../flag.txt`、`/app/flag.txt` | 回显的仍是上传内容（内容来自内存，不重新读文件） |
+| 直接请求 `/flag.txt`、`/app/flag.txt`、`/static/...` | 404 `{"detail":"Not Found"}` |
 
-## 补充：2026-10-28（新 token 场次）
+## 第三阶段：SVG 是 XML → XXE
 
-- 确认这是 FastAPI：`/openapi.json` 只有 3 个路由 `GET /`、`POST /`、`GET /ping`、`GET /hint`。
-- `POST /` 的 `image` 被回显到页面的 `Current Image:` 里（raw HTML，不转义），
-  但上传内容不走模板：塞 `{{7*7}}` 仍原样输出，排除 SSTI。
-- 文件名带 `../flag.txt`、`/app/flag.txt` 时回显的仍是上传内容本身（内容来自内存，不重新读文件）。
-- `/hint` 泄漏了 app 目录结构：`main.py`、`prestart.sh`、`flag.txt`、`templates/`、`users/schemas.py`。
-  说明 flag 就在 `/app/flag.txt`，但还需要一个文件读原语。
+上传带 `<!ENTITY xxe SYSTEM "file:///app/flag.txt">` 的 SVG，
+`Current Image:` 区块里的 `<text>` 直接变成 flag。
+
+## 走不通 / 走过的弯路（留档）
+
+| 方向 | 结果 | 判据 |
+| --- | --- | --- |
+| 猜测静态目录（`/uploads/`、`/static/`、`/images/`） | 全 404 | 上传不落盘 |
+| 文件名穿越 | 无效 | 回显内容与上传内容一致，不是重新读盘 |
+| 模板注入 | 无效 | `{{7*7}}` 原样输出 |
+
+## 这次真正的收获
+
+1. **上传校验写「只支持 SVG」时，第一个要试的是 XXE**，因为 SVG 是 XML。
+2. 回显「解析后的内容」等于自带外带通道，不需要 OOB 服务器。
+3. 目录列表页（`/hint`）是最便宜的情报：它给出了 flag 的确切路径。
