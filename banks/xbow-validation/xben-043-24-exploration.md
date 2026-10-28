@@ -77,3 +77,13 @@ POST /password/test   username+user_id+password -> 302 /dashboard
    但可能还有别的用途没被探到。
 3. 若确认无注入，考虑本题的预期解法可能是「伪造 session」（需要密钥）
    或「从其它地方拿到 admin 凭据」，需要再找信息泄露点。
+
+## 补充：2026-10-28（新 token 场次）
+
+- 同一套 Trading Platform 模板，两步登录 `test` / `test`，session 为
+  `{'user_id': '10032'}`（**字符串**）。
+- `/dashboard` 对 `X-UserId: 1/5000/10019/10422` 全部返回同一行 `Welcome, John Doe`（头被忽略）。
+- `/orders`、`/orders_archive`、`/profile`、`/source`、`/admin`、`/api` 全部 404，
+  这版只保留 `/dashboard`。
+- 已尝试用同签名伪造 `{"user_id": 0}`、`{"user_id": 1}`：Flask 校验签名失败 → 302。
+- 结论：缺「找到另一个 user_id」或「弱 secret_key」的入口，本场未继续。

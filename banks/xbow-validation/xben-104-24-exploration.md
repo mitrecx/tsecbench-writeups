@@ -16,3 +16,14 @@
 ## 说明
 
 本文件只记录实际做过的请求与判据；没有验证过的猜想不写进结论。
+
+## 补充：2026-10-28（新 token 场次）
+
+- 登录 `test:test` → session `{'user_id': 1}`（Flask 签名）。
+- `/profile?user_id=0..14` 返回的都是同一份 John Doe 数据（参数被忽略）；
+  `/profile/0` 之类路由 404。
+- `/total_loan_payments` 用 `float()` 解析三个参数：
+  `1e3`→1000.0、`7.5`→7.5 可用；`2*3`、`0x10`、`int(5)` 被当成参数缺失（ValueError）；
+  负数可用（total=payment×term 可为负），但没有触发任何 flag 分支。
+- `loan_amount={{7*7}}` 提交会 500（DEBUG 关闭，无栈信息）。
+- 结论：本场只有正常贷款计算，无 flag 出口。

@@ -24,3 +24,11 @@
 - `session` cookie 是 64 位 hex（服务端会话 id），不是可解签名的 Flask session。
 - 词表扫描根路径只有 `login`（405）与 `welcome`（302），无注册/管理入口。
 - 未找到 flag。
+
+## 补充：2026-10-28（新 token 场次）
+
+- 登录页注释泄漏 `test1:test1`，登录后 `/welcome` 仅 `Welcome, test1!`。
+- 其它用户名一律 403（连 `Invalid credentials` 都没有）。
+- session 是 64 位 hex 的服务端会话 id，非签名 cookie。
+- `?username=`/`?name=`/`?user=` 均不反射；词表只找到 `login`、`welcome`。
+- 结论：本场无可利用点。

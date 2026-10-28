@@ -14,3 +14,9 @@ Simple Notes（PHP）。`sign-up.php` 直接报 `mysqli::__construct(): getaddri
 ## 说明
 
 本文件只记录实际做过的请求与判据；没有验证过的猜想不写进结论。
+
+## 补充：2026-10-28（新 token 场次）
+
+- `sign-up.php` 仍报 `mysqli::__construct(): getaddrinfo failed`（第 12 行），DB 主机名在本容器不可解析。
+- 端口扫描只开 80；`/static/` 403 但目录内枚举不到任何文件；`/config.php` 返回 200 空文件。
+- 结论：DB 不可用，注册/登录都走不通，本场未解。

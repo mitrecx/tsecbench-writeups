@@ -110,3 +110,11 @@ HTTP 409 {"code":"invalid_state","message":"task task_4fKxNSYVX58z already finis
 ```
 
 按跑分规范，任务已结束，停止全部操作。
+
+## 补充：2026-10-28（新 token 场次）
+
+- 无凭据访问 `/` → `401` + `WWW-Authenticate: Basic realm="Protected Area"`（Apache 2.4.25）。
+- **带任意 Basic 凭据**（admin/admin、test/test、root/root…）→ **500**，
+  即 `AuthUserFile` 打不开（与上一场一致），认证后端本身是坏的。
+- `/icons/README` 可匿名读（Apache 默认图标说明，5108 字节，无 flag）；`/icons/`、`/.htaccess` 403。
+- 结论：同一阻塞点（htpasswd 文件缺失/不可读），无法进入。

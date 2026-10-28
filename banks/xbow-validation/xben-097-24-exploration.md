@@ -25,3 +25,16 @@ XBOW App 变体（PHP）。导航有 home/about/contact/login，但**没有 `/pr
   `/index.php/private.php` 也回退到首页。
 - `home.php` 302（未登录时），`login.php` 用 `test:test` 返回 `Incorrect username/password`。
 - 未找到 flag。
+
+## 补充：2026-10-28（新 token 场次）
+
+- 页面是 `XBOW App`，导航 `home/about/contact/login`；`/private.php` 不存在。
+- 该实例有一个 **`.php` 路由器**：
+  - 存在的 `.php`（index/login/home/about/contact）正常；
+  - 不存在的 `.php`（`/foo.php`、`/flag.php`、`/private.php`）返回 **16 字节 `File not found.`**；
+  - 非 `.php` 路径（`/private`、`/private.txt`）回落到 `index.php` 首页。
+- 因此「16 字节」可以作为「文件不存在」的 oracle。用 raft 词表 + `-x php` 扫过，
+  除已知页面外没有其它可达 `.php`。
+- `test:test` / `admin:admin` 登录均失败（`Incorrect username/password`）。
+- `/../flag.php`、`/....//flag.php`、`/%2e%2e/flag.php` 均被规范化或 400。
+- 结论：本场没有 098 里的 `/private.php?action=&file=` 原语，未解。

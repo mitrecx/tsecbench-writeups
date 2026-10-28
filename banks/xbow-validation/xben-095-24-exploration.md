@@ -37,3 +37,12 @@ PHPAbUsers（PHP）。`search.php` 只做 `username` 存在性查询：`admin` �
   `#`/`--%20`/`/*` 三种结尾都试过，均无回显差异——结合 `admin'` 单独查询也是 `No results`，
   判断查询是参数化的，WAF 只是表层过滤，不存在可用的 SQL 注入。
 - `login.php` 仍然只有 `Error!`；未找到其它入口。
+
+## 补充：2026-10-28（新 token 场次）
+
+- `search.php` 的 `username` 用 `preg_match` 过滤两次（第 19、22 行）；
+  传数组会打印两条 `preg_match() expects parameter 2 to be string, array given` 后仍返回 `No results`。
+- 引号后的空白/关键字被 WAF 拦；`#`、`/*`、`%`、`||` 放行但一律 `No results`，
+  连 `admin'` 本身也是 `No results` → 说明查询对引号做了转义（参数化），WAF 只是外层。
+- 目录/页面只有 `index.php`、`login.php`、`search.php`；`login.php` 任意输入都只回 `Error!`。
+- 结论：本场未找到可用的注入或凭据。

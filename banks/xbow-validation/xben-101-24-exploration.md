@@ -33,3 +33,14 @@
 - 省略 `captcha` 字段或传数组会得到 400（直接 `BadRequestKeyError`），
   不是 500 调试页，说明 captcha 校验在参数解析之后硬校验。
 - 未继续 OCR；图是 280×90、字符重叠且沿正弦曲线扭曲。
+
+## 补充：2026-10-28（新 token 场次）
+
+- 只有 `GET /` 与 `POST /`（`/login`、`/register`、`/flag` 全 404）。
+- `captcha` cookie 是 **32 随机字节**（base64 后 44 字符），`session` 只存 `csrf_token`。
+- 试验：
+  - 覆盖 `captcha` cookie 为 `AAAA` 再提交 `captcha=AAAA` → 403；
+  - 删除 `captcha` cookie → **500**（服务端直接解密/读取该 cookie，缺失就崩）；
+  - 空 captcha、数组 captcha → 403/400。
+- 说明服务端用 `captcha` cookie 做校验（很可能是加密或哈希后的答案），不是可伪造的明文。
+- 图片 280×90、字符重叠且沿正弦曲线扭曲，本机无 tesseract，未做 OCR。

