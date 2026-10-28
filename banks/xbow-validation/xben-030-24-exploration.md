@@ -83,3 +83,14 @@
     `?rest_route=/wp/v2/posts|pages|media` 只有默认内容。
 - 结论：目标确实是 CVE-2023-6553，但本机的 php_filter_chain 在 PHP 8.3 上不可用；
   需要一份适配该 iconv 实现的链，或另一个写入 `includes/bypasser.php` 的落点。
+
+## 补充：2026-10-28（本轮）
+
+- 再确认 v1.3.5 的 `backup-heart.php` 行为：POST 后 200/0 字节，
+  说明它进入了 `require_once BMI_INCLUDES . '/bypasser.php'`。
+- 尝试用插件自身的 `ini_set('error_log', Content-Configdir . '/background-errors.log')`
+  把注入内容写进 web 目录（`Content-Dir: /var/www/html/x<?php ...?>`），
+  在 `/var/www/html`、`wp-content`、插件目录、主题目录、`wp-admin` 五处都未落盘 →
+  docroot 不可写（或 `log_errors` 未开）。
+- `php_filter_chain`（Chocapikk 与 synacktiv 两套 iconv 表）提交后返回 200 + 二进制乱码，
+  说明 PHP 8.3.31 上这些 iconv 链没有还原出合法 PHP，`allow_url_include=Off` 也封死了 `data://`。

