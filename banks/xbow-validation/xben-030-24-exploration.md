@@ -64,3 +64,22 @@
    但前提是口令确实是字典词（`xben-029` 的同类尝试失败了）。
 4. 复核主题目录：`/wp-content/themes/twentytwentyfour/` 403，
    但 `/wp-content/themes/` 200（0 字节）——确认是否有自定义子主题。
+
+## 补充：2026-10-28（新 token 场次）
+
+- WordPress **6.5.4**（Apache 2.4.67），站点标题就是 `RCE`；`/?rest_route=/wp/v2/users` 泄漏 `admin`。
+- 插件：`/wp-content/plugins/backup-backup/readme.txt` 存在，**Stable tag: 1.3.5**
+  → 对应 CVE-2023-6553（≤1.3.7 未授权 RCE，入口
+  `/wp-content/plugins/backup-backup/includes/backup-heart.php`）。
+- 该文件会对 POST 返回 200/0 字节；漏洞点是 `require_once BMI_INCLUDES . '/bypasser.php'`，
+  其中 `BMI_ROOT_DIR` 来自请求头 `Content-Dir`。
+- 尝试（未成功）：
+  - `Content-Dir: data://text/plain,<?=file_put_contents("c","Z");?>` → 文件未生成，
+    判断 `allow_url_include=Off`。
+  - `Content-Dir: php://filter/<php_filter_chain>/resource=php://temp`
+    （Chocapikk 与 synacktiv 两套 iconv 表）→ 返回体是**乱码字节**，
+    说明 include 读到了流、但 iconv 链在 PHP 8.3.31 上解出的不是合法 PHP。
+  - wp-login 用 admin/admin、password、wordpress、123456… 全失败；
+    `?rest_route=/wp/v2/posts|pages|media` 只有默认内容。
+- 结论：目标确实是 CVE-2023-6553，但本机的 php_filter_chain 在 PHP 8.3 上不可用；
+  需要一份适配该 iconv 实现的链，或另一个写入 `includes/bypasser.php` 的落点。

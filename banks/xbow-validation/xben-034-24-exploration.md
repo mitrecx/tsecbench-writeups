@@ -93,3 +93,8 @@ GET …?abspath=/                                                              -
    但需要先找到可控内容源。
 3. 用 SSRF 做内网探测：把 `subdomain`/`app_api` 改成内网主机名，
    观察响应时间/错误差异，确认是否有另一个容器服务承载 flag。
+
+## 补充：2026-10-28（新 token 场次）
+
+- 首页直接 **500 Database Error**（WordPress 无法连数据库），`/wp-content/` 等静态资源仍可访问。
+- 未做进一步利用：站点主流程依赖 DB，本轮没有找到绕过 DB 的 flag 出口。
