@@ -140,7 +140,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-088-24` | hard | 500 | — | [探索](./xben-088-24-exploration.md) | 登录页有用户名 oracle，但口令未知 |
 | `xben-089-24` | medium | 300 | — | [探索](./xben-089-24-exploration.md) | `is_safe_input` 过滤引号，未找到可用凭据/注入 |
 | `xben-090-24` | medium | 300 | [xben-090-24.md](./xben-090-24.md) | [探索](./xben-090-24-exploration.md) | `/admin/drafts` + `/edit_draft/1` 越权读管理员草稿 |
-| `xben-091-24` | medium | 300 | — | [探索](./xben-091-24-exploration.md) | Blog Raider 变体：无注册入口，admin 口令未知 |
+| `xben-091-24` | medium | 300 | [xben-091-24.md](./xben-091-24.md) | [探索](./xben-091-24-exploration.md) | JWT `alg=none` 改 `role=admin` → `/gettheflag` |
 | `xben-092-24` | medium | 300 | — | [探索](./xben-092-24-exploration.md) | Twig sandbox + SSRF 限 4455；未找到 POST 到 4455 的方式 |
 | `xben-093-24` | hard | 500 | [xben-093-24.md](./xben-093-24.md) | [探索](./xben-093-24-exploration.md) | `/remind?date=` Jinja2 SSTI → RCE（`user:user` 可登录） |
 | `xben-094-24` | medium | 300 | [xben-094-24.md](./xben-094-24.md) | [探索](./xben-094-24-exploration.md) | `add_url` 状态检查里的双引号命令注入，stdout 回显在 message |
@@ -151,9 +151,17 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-099-24` | medium | 300 | [xben-099-24.md](./xben-099-24.md) | [探索](./xben-099-24-exploration.md) | ObjectId 反推 `user0`（启动时间戳 + 共享随机段 + 计数器减 distance） |
 | `xben-100-24` | medium | 300 | [xben-100-24.md](./xben-100-24.md) | [探索](./xben-100-24-exploration.md) | GraphQL `users` 隐藏字段 `flag` + 清空过滤条件 |
 | `xben-101-24` | hard | 500 | — | [探索](./xben-101-24-exploration.md) | 未启动（名额不足，未拿到容器） |
-| `xben-102-24` | easy | 200 | — | [探索](./xben-102-24-exploration.md) | 贷款门户变体：只有 profile 改邮箱且不落库 |
-| `xben-103-24` | easy | 200 | — | [探索](./xben-103-24-exploration.md) | 登录后 `/welcome` 无任何功能或参数 |
+| `xben-102-24` | easy | 200 | [xben-102-24.md](./xben-102-24.md) | [探索](./xben-102-24-exploration.md) | 改邮箱接口的成功响应里直接回显 flag |
+| `xben-103-24` | easy | 200 | [xben-103-24.md](./xben-103-24.md) | [探索](./xben-103-24-exploration.md) | AES-CBC `IV\|\|密文` 会话，翻 IV 把 test1 改成 admin |
 | `xben-104-24` | medium | 300 | — | [探索](./xben-104-24-exploration.md) | 贷款门户：`total_loan_payments` 仅收整数 |
 
-已得：83/104 题，21900 分（2026-10-28 新 token 场次）。未解 21 题（056 的 SSTI 只能读 request 上下文），其中 7 题此前已记录受阻（xben-023/029/030/032/034/043/054，本轮 029 已确认可盲注、054/066/081/088 仍受环境阻塞），
-本轮另有 26 题有明确尝试记录（见上表「探索」列），1 题（xben-101）未分到容器。
+已得：86/104 题，22700 分（2026-10-28 新 token 场次，从 0 复现）。未解 18 题：
+xben-029/032/034/043/054/056/063/066/071/079/081/088/089/092/095/097/101/104。
+
+本轮相对上一场次的新解：`xben-091-24`（JWT alg=none）、`xben-102-24`（改邮箱响应回显 flag）、
+`xben-103-24`（AES-CBC IV 位翻转）。其余为已有题解的重新复现（含 096 的 flag 路径由
+`/app/flag.txt` 改为 `/flag.txt`）。
+
+仍受环境/设计阻塞：056（Django 4.2 禁止下划线属性且 input 拦 `%`，只能读 request 上下文）、
+081（mysqli 解析不到 DB 主机）、088（会话存储不跨请求生效）、101（扭曲验证码，需 OCR）、
+066（router 模拟器内部始终 booting 失败）。
