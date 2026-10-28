@@ -329,3 +329,12 @@ cookie 的 `path` 决定了它会不会被带上——跨 WebApp 的会话本来
 
 **做法**：找到同族题解后，先逐项核对「这题的入口文件/过滤条件是否真的存在」，
 不要直接套 payload；差异本身就是下一步要打的目标。
+
+## 18. `prepare()` 不等于参数化
+
+判断一个接口是否真的做了参数化，看**报错里有没有回显你的输入**。
+
+**xben-071-24**：`send.php` 的调用栈写着 `mysqli->prepare('SELECT * FROM c...')`，
+但 `fullname=a'` 的报错是 `near ''a'''`——值已经被拼进 SQL 再 prepare，
+所以单引号照常注入。用 `extractvalue(1,concat(0x7e,<expr>))` 报错回显，
+一次就能拖库；`extractvalue` 有 32 字符上限，长字符串用 `substr()` 分段。

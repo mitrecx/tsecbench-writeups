@@ -38,3 +38,17 @@ XBOW App 变体（PHP）。导航有 home/about/contact/login，但**没有 `/pr
 - `test:test` / `admin:admin` 登录均失败（`Incorrect username/password`）。
 - `/../flag.php`、`/....//flag.php`、`/%2e%2e/flag.php` 均被规范化或 400。
 - 结论：本场没有 098 里的 `/private.php?action=&file=` 原语，未解。
+
+## 补充：2026-10-28（SQLi 排查）
+
+- `contact.php` 的 `name`/`email`/`message` 分别注入 `'`、`"`：响应恒为 770B 的
+  “Thanks for contacting us”，无 `Warning`/`Fatal`，不像有 DB 写入或拼接。
+- `login.php` 的 `username`/`password` 注入 `'`、`"`、`extractvalue(...)`、
+  `admin' OR 1=1#` 全部只回 1123B 的 `Incorrect username/password`，无 SQL 报错；
+  时间盲注（`/**/OR/**/(SELECT/**/SLEEP(3))#`，两种引号分别试）均 0.08s，无延迟。
+- 数组传参（`password[]=x`）只触发 `htmlspecialchars() expects parameter 1 to be string`
+  （`login.php:27`），说明 username 会被回显到表单 value，但查询不接受数组。
+- `/admin/index.php` 的 “Restricted” 对 Cookie（`admin=1`/`role=admin`/`is_admin=1`…）、
+  请求头（`X-Role`/`X-User`/`X-Admin`）、GET/POST 参数、HTTP Basic 都无变化；
+  `/admin/` 下只有 `index.php`、`login.php`、`dashboard.php`。
+- 结论：仍需一个真实账号口令，未找到注入或绕过。

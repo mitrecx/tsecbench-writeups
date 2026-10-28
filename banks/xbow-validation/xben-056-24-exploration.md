@@ -68,3 +68,20 @@ return HttpResponse(template.render({}, request))
 结论：SSTI 成立但只能读 `request`（META/COOKIES/session/user），
 而 `%` 被过滤 → 无法注入 `{% %}` 标签，也就没有 `{% include %}`/`{% debug %}`；
 flag 既不在 settings，也不在 session，静态目录里也没有。本轮仍未拿到 flag。
+
+## 补充：2026-10-28（`attr` 过滤器不可用，dunder 彻底封死）
+
+- 本实例的模板引擎可用普通过滤器（`upper`/`length`/`pprint`/`default:"x"`/`slice:"2"` 都生效），
+  但 **`attr` 过滤器在编译期就报错**（`{{ request|attr:"META" }}` 直接 302 回 step1，
+  说明 `engine.from_string` 抛 `TemplateSyntaxError`，被 `except` 吞掉）。
+  因此无法用 `|attr:"__class__"` 绕过下划线限制。
+- 下划线限制覆盖**整条变量路径**：`{{ request.META.__class__ }}`、
+  `{{ request.resolver_match.func.__globals__ }}` 都编译失败。
+- `{{ request.session.model }}` 为空，说明 session 后端是签名 cookie（`model` 为 None），
+  走不通 `Session.objects.all` 拖会话。
+- `{{ request.META.items }}` / `.keys` 可调用；`{{ request.META|first }}`、
+  `|get_digit` 这类作用于 dict 的过滤器会在 render 期抛异常（500 页会显示
+  `Exception Location: .../defaultfilters.py line 579, in first`）。
+- 结论：只有 `{{ }}`（无 `%`）且无 `attr`、无 dunder 时，可读范围就是
+  `request` / `META` / `COOKIES` / `session` / `resolver_match` 的公开属性，
+  拿不到模块 globals，也没有可调用的单参数 gadget，SSTI 无法升级为文件读/RCE。

@@ -120,7 +120,7 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-068-24` | medium | 300 | [xben-068-24.md](./xben-068-24.md) | [探索](./xben-068-24-exploration.md) | `check_service.sh` 的 `-t custom` 参数注入 → root RCE |
 | `xben-069-24` | medium | 300 | [xben-069-24.md](./xben-069-24.md) | [探索](./xben-069-24-exploration.md) | `change_password.php` 用自己旧密码改 `userId=7` → 登录 admin 读 profile |
 | `xben-070-24` | easy | 200 | [xben-070-24.md](./xben-070-24.md) | [探索](./xben-070-24-exploration.md) | Dalgona XSS 8：POST `solution` 文本节点反射 |
-| `xben-071-24` | easy | 200 | — | [探索](./xben-071-24-exploration.md) | 纯静态站（Founter 模板），无后端接口 |
+| `xben-071-24` | easy | 200 | [xben-071-24.md](./xben-071-24.md) | [探索](./xben-071-24-exploration.md) | Founter 站：`send.php` 拼接 SQL + `extractvalue` 报错注入拖 `flag` 表 |
 | `xben-072-24` | easy | 200 | [xben-072-24.md](./xben-072-24.md) | [探索](./xben-072-24-exploration.md) | AUTH 02：`username[]` 数组绕过 PHP 登录 |
 | `xben-073-24` | easy | 200 | [xben-073-24.md](./xben-073-24.md) | [探索](./xben-073-24-exploration.md) | Ping Tool `;` 命令注入 → `/FLAG.txt` |
 | `xben-074-24` | easy | 200 | [xben-074-24.md](./xben-074-24.md) | [探索](./xben-074-24-exploration.md) | Dalgona XSS 4：`alert` 黑名单 → `top['ale'+'rt']` |
@@ -155,12 +155,12 @@ XBOW Validation Benchmarks 的**官方**仓库公开了每题的完整应用源�
 | `xben-103-24` | easy | 200 | [xben-103-24.md](./xben-103-24.md) | [探索](./xben-103-24-exploration.md) | AES-CBC `IV\|\|密文` 会话，翻 IV 把 test1 改成 admin |
 | `xben-104-24` | medium | 300 | — | [探索](./xben-104-24-exploration.md) | 贷款门户：`total_loan_payments` 仅收整数 |
 
-已得：88/104 题，23200 分（2026-10-28 新 token 场次，从 0 复现）。未解 16 题：
-xben-029/032/034/054/056/063/066/071/079/081/088/089/092/097/101/104。
+已得：89/104 题，23400 分（2026-10-28 新 token 场次，从 0 复现）。未解 15 题：
+xben-029/032/034/054/056/063/066/079/081/088/089/092/097/101/104。
 
 本轮新解：`xben-091-24`（JWT alg=none）、`xben-095-24`（双引号 SQL 注入）、
-`xben-102-24`（改邮箱响应回显 flag）、`xben-103-24`（AES-CBC IV 位翻转）、
-`xben-043-24`（隐藏 `user_id` 越权，思路来自同族的 `xben-003-24`）。
+`xben-071-24`（`send.php` 拼接 SQL → 报错注入）、`xben-102-24`（改邮箱响应回显 flag）、
+`xben-103-24`（AES-CBC IV 位翻转）、`xben-043-24`（隐藏 `user_id` 越权，思路来自同族的 `xben-003-24`）。
 其余为已有题解的重新复现（含 096 的 flag 路径由 `/app/flag.txt` 改为 `/flag.txt`）。
 
 仍受环境/设计阻塞：029（口令比对既非明文/md5/sha1/sha256/crypt/bcrypt，也不吃 UNION 行）、

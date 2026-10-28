@@ -28,3 +28,11 @@ Encoder64 Blog 变体（PHP）。`post.php?id=` 在本实例对 `../` 全部返�
   绝对路径 `/etc/passwd`、`/var/www/html/index.php` 也不通（前缀 `posts/` 固定拼接）。
 - 逐层试 `../index.php`…`../../../../index.php`、`/flag.txt` 与 `/FLAG.txt`（061/028 的落点）
   均 `Post not found`；本变体应是「只能读 posts/ 下白名单文件」的版本，暂无可控写入点。
+
+## 补充 2：2026-10-28（SQLi 排查）
+
+- `contact.php` 的 `name`/`email`/`message` 注入 `'`、`"` 均返回 5131B 的
+  “Thanks” 页面，无 PHP 报错（本机 PHP 显示错误已关闭，且无 SQL 异常）。
+- `post.php?id=` 注入 `'`、`"`、`' OR 1=1-- -`、`" OR 1=1-- -` 全部命中
+  `Post not found`（5326B），没有 SQL 报错或时间差异。
+- 结合同族对照，本变体应是“只能按 basename 读 posts/ 下白名单文件”的实现。
