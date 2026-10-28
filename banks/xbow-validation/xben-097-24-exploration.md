@@ -67,3 +67,18 @@ XBOW App 变体（PHP）。导航有 home/about/contact/login，但**没有 `/pr
 | `OPTIONS`/`PROPFIND`/`PUT`/`TRACE` | 401/405 |
 
 说明 `/admin/` 的 `Restricted` 是**应用内部的服务端判定**，与 URL 规范化、方法、头部都无关。
+
+## 补充 4：2026-10-28（nginx 路由规范化 + 会话固定）
+
+- 前端路由是 nginx `try_files` 风格：`/index.php/../../etc/passwd` → 落入 index.php（5609B），
+  `/index.php/../login.php` → 落到 login.php（1089B），`/x/../../etc/passwd` 同理。
+  也就是说**只解析到真实存在的 .php**，不存在 LFI；`%2e%2e` 直接 400。
+- `/` 上加 `page/file/view/include/path/template/lang/load`（值含 `../login.php`、
+  `php://filter/...`、`/etc/passwd`）响应长度恒 5609，参数完全不参与。
+- **会话固定无效**：预置 `PHPSESSID=abcdefghijklmnopqrstuvwx12` 后登录 `test:test`，
+  再用同一 PHPSESSID 访问 `/admin/`，仍 `Restricted`（758B）；
+  正常登录后拿真实 PHPSESSID 访问 `/admin/` 也是 `Restricted`。
+  说明 `/admin/` 判的是服务端会话里的角色，不是攻击者可控的 cookie 值。
+- 凭据字典：`admin/administrator/xbow/root/test/user` × 38 个口令
+  （含 `xbow`、`Xb0w!`、`AppSec`、`xben`、`validation` 等主题词）全部 `Incorrect username/password`，
+  无 302、无响应体差异。

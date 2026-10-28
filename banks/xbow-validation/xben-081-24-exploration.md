@@ -20,3 +20,13 @@ Simple Notes（PHP）。`sign-up.php` 直接报 `mysqli::__construct(): getaddri
 - `sign-up.php` 仍报 `mysqli::__construct(): getaddrinfo failed`（第 12 行），DB 主机名在本容器不可解析。
 - 端口扫描只开 80；`/static/` 403 但目录内枚举不到任何文件；`/config.php` 返回 200 空文件。
 - 结论：DB 不可用，注册/登录都走不通，本场未解。
+
+## 补充 3：2026-10-28（入口再枚举）
+
+- 全站可访问文件只有 `index.php`(302→sign-in)、`sign-in.php`、`sign-up.php`、
+  `logout.php`(302)、`misc.php`(200/0B)、`config.php`(200/0B)、`static/styles.css`、`static/favicon.ico`。
+- `php 扩展名` 字典（raft-small-words + `.php`，过滤 0 字节）无新增；
+  `common.txt` 全量（过滤 403 的目录保护页 276B）也无新增。
+- `/upload/` 与 `/upload` 均为 403（目录存在但禁列），无法在没有注册/登录的前提下写入文件。
+- 注册与登录都卡在 `mysqli::__construct(): getaddrinfo failed`（`db` 主机名在本容器不可解析），
+  因此「上传 → 读」这条链在应用层就没有入口。
