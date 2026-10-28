@@ -62,3 +62,16 @@ SKU 系统（PHP + Twig 3.10.3 sandbox + 内网 SKU 服务 :4455）。`sku_url.p
 - `sku_process` 只接受 POST 的 `data`（JPG），而 `sku_url.php` 用 `file_get_contents` 只发 GET，
   且把 `data`/`file` 字段一并 POST 给 `sku_url.php` 也不会转发 body → 仍然 `No data received.`。
 - 端口白名单按解析后的 host:port 判断，`file://`、`data://`、`userinfo`、`%40` 都被拒。
+
+## 补充 2：2026-10-28（子页面与删除接口）
+
+- `sku_system.php` 的 Delete 是 `POST sku_delete.php`，隐藏字段 `id`；
+  正常删除 302 回 `sku_system.php`，页面清空。
+- `sku_delete.php` 的 `id` 试过 `1' AND (SELECT ... SLEEP(3))-- -`、双引号版本，
+  均无延迟（0.09–0.14s），不像 SQL 注入。
+- `sku_search.php` 在空/`flag`/通配/注入串下都只返回空表（340B），
+  只能搜到当前会话自己的 SKU。
+- `sku_product_detail.php?id=0..59` 全部为 `SKU not found`（198B），
+  没有跨会话的全局 ID 可枚举。
+- 首页的 "temporally session id" 每次请求都变（32 hex），但 SKU 仍能跨请求保留，
+  说明真正的键是 PHPSESSID；`sku_url.php` 仍是唯一的外网入口，且只发 GET。
