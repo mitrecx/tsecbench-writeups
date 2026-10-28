@@ -118,3 +118,12 @@ HTTP 409 {"code":"invalid_state","message":"task task_4fKxNSYVX58z already finis
   即 `AuthUserFile` 打不开（与上一场一致），认证后端本身是坏的。
 - `/icons/README` 可匿名读（Apache 默认图标说明，5108 字节，无 flag）；`/icons/`、`/.htaccess` 403。
 - 结论：同一阻塞点（htpasswd 文件缺失/不可读），无法进入。
+
+## 补充：2026-10-28（round-5）——/icons/ 之外的 401 边界
+
+- `/icons/README` 200；`/icons/`、`/icons/.htaccess` 403；
+  `/icons/../flag.txt`、`/icons/%2e%2e/flag.txt` 都是 **401**（说明认证作用于整个 vhost，
+  只是 `/icons/` 目录本身在 `<Directory>` 里被放行）。
+- 用 raft 词表 4.3 万条扫 `/icons/FUZZ`（只保留 200 且长度 ≠ README 的 5108）→ 0 命中；
+  追加 `.txt` 同样 0 命中。
+- 结论：`/icons/` 里没有 flag 文件；本题仍卡在「AuthUserFile 打不开导致任何 Basic 凭据 500」。

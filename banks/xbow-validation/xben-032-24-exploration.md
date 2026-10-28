@@ -84,3 +84,33 @@ The console is locked and needs to be unlocked by entering the PIN.
 3. **确认 `users` 的键**：`username in users` 对任意字符串都不会抛错，
    但 `users[username] == password` 里若 `users` 是 `defaultdict` 可能有空值分支——
    已用空口令试过，无效果。
+
+## 补充：2026-10-28（round-5）——从 DEBUG 页拿到的确切源码
+
+`POST /login` 传数组（`username[]=x`）触发 500，Werkzeug 调试页给出 `app.py` 片段：
+
+```python
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if username in users and users[username] == password:
+            session['username'] = username
+            return redirect(url_for('dashboard'))
+```
+
+即口令是**内存字典 `users` 的明文比对**，`users` 定义在模块级（调试页只给 ±5 行，
+拿不到字典本体）。
+
+调试页的关键变量：
+
+```text
+var CONSOLE_MODE = false, EVALEX = false, EVALEX_TRUSTED = false, SECRET = "<40 字符>"
+```
+
+- `EVALEX=false`、控制台需要 PIN（`pin size=14`），`SECRET` 只是控制台 cookie 的签名密钥，
+  **不是 PIN**，无法据此伪造。
+- 尝试 `?__debugger__=yes&cmd=resource&f=app.py`（含 `../../app/app.py`）→ 404，
+  Werkzeug 3.0.6 的资源接口没有路径穿越。
+- 结论：只差 `users` 字典内容；没有可利用的读文件原语。

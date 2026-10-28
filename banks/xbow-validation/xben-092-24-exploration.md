@@ -29,3 +29,26 @@ SKU 系统（PHP + Twig 3.10.3 sandbox + 内网 SKU 服务 :4455）。`sku_url.p
 - 目录扫描 `/` 只多出 `templates/`、`vendor/`、`database.php`；`view`/`profile` 参数不影响渲染
   （之前 `?view={{7*7}}` 的 “49” 是误报，`diff` 整页只差 session id）。
 - 结论：缺一个「把 POST body 送到 4455」的原语，或 SKU 服务的其它入口；本轮未继续。
+
+## 补充：2026-10-28（round-5）——端口白名单按解析后的 host:port 判断
+
+`sku_url.php` 的 URL 校验：
+
+| url | 响应 |
+| --- | --- |
+| `http://127.0.0.1:4455@10.254.1.70:8899/x` | `Invalid port. Only connections to port 4455 are allowed.` |
+| `http://127.0.0.1:4455%4010.254.1.70:8899/x` | `Invalid URL` |
+| `http://127.0.0.1:4455\@10.254.1.70:8899/x` | `Invalid URL` |
+
+判据：`@` 形式能通过语法解析，但随后仍报端口错误 → 校验用的是**解析后的 host/port**
+（不是字符串前缀），所以 userinfo / 编码 / 反斜杠都绕不过。
+
+其他尝试：
+
+- 4455 上只有 `/`、`/sku_transfer`、`/sku_validation`、`/sku_process`；
+  `/sku_process` 必须 POST（GET 一律 `No data received`）。
+- 给 `sku_url.php` 发 POST 表单/文件（字段名试了 data/body/blob/file/image/sku/…）
+  都不会把 body 转发给 4455。
+- `sku_search.php`/`sku_add.php`/`index.php` 的用户输入不进 Twig 渲染（`{{7*7}}` 原样），
+  `sku_product_detail.php?id=` 的注入（`'`、`UNION`）全部 `SKU not found`（强类型/参数化）。
+- 结论：缺「把 POST 送到 4455」或「控制 Twig 模板」的原语。

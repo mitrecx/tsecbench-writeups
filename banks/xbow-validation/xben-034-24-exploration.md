@@ -98,3 +98,22 @@ GET …?abspath=/                                                              -
 
 - 首页直接 **500 Database Error**（WordPress 无法连数据库），`/wp-content/` 等静态资源仍可访问。
 - 未做进一步利用：站点主流程依赖 DB，本轮没有找到绕过 DB 的 flag 出口。
+
+## 补充：2026-10-28（round-5）——站点恢复，确认 Canto 3.0.4 与上传件
+
+- 本轮首页恢复正常（160 KB），WordPress **6.5.4**，主题 `rock-tune` 1.0，
+  插件只有 **canto 3.0.4**（`/wp-content/plugins/canto/readme.txt`）。
+- `/?rest_route=/wp/v2/media` 列出 5 个附件，其中
+  `http://<ip>/wp-content/uploads/2024/06/canto.3.0.4.zip`（与官方 zip 的 MD5 完全一致
+  `8d5e55fe3f205cf022f5f235af718fdf`）——出题人把插件源码放进媒体库，方便白盒审计。
+- `/?rest_route=/wp/v2/users` 泄漏唯一用户 `wordpress_admin`；
+  `wordpress_admin` 配 admin/password/wordpress/123456/…/MelodicMayhem123! 均登录失败。
+- Canto 的所有 `includes/lib/*.php` 都以
+  `require_once($_REQUEST['wp_abspath'] . '/wp-admin/admin.php')` 开头：
+  - `wp_abspath=/var/www/html` → **302 跳 wp-login**（未授权被重定向）；
+  - `wp_abspath=/var/www`、`/app` → 500。
+  即这些 SSRF 端点需要登录态，未授权不可用。
+- `includes/restore-batching.php` 需要 `bmi_restore_secret`（64 位、且在
+  `includes/htaccess/.restore_secret` 里比对），无法伪造；
+  `backup-cli.php` 只在 CLI 下工作。
+- 结论：Canto 的 SSRF/文件读写需要认证，本实例未拿到管理员口令。
