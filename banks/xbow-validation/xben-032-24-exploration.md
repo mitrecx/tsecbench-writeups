@@ -114,3 +114,22 @@ var CONSOLE_MODE = false, EVALEX = false, EVALEX_TRUSTED = false, SECRET = "<40 
 - 尝试 `?__debugger__=yes&cmd=resource&f=app.py`（含 `../../app/app.py`）→ 404，
   Werkzeug 3.0.6 的资源接口没有路径穿越。
 - 结论：只差 `users` 字典内容；没有可利用的读文件原语。
+
+## 补充：2026-10-28（调试控制台：`resource` 可用但**不能执行**）
+
+从 500 页取到本进程的调试器密钥 `SECRET`，然后验证 Werkzeug 3.0.6 的控制台行为：
+
+| 请求 | 结果 |
+| --- | --- |
+| `/console?__debugger__=yes&cmd=resource&f=style.css&s=<SECRET>` | **200**，返回 6078B 的调试器 CSS（密钥有效） |
+| `/login?__debugger__=yes&cmd=print(1+1)&frm=0&s=<SECRET>` | 200，但返回的是**正常登录页**（560B），没有执行 |
+| `/console?...&cmd=print(id)`、`cmd=__import__('os')...` | 404 |
+| `cmd=resource&f=../../etc/passwd`、`/etc/passwd`、`app.py` | 404（资源白名单，无穿越） |
+
+结论：**`SECRET` 只能读调试器自带静态资源，命令执行被 `EVALEX=false` 关掉**，
+所以「拿 SECRET 换 RCE」这条路是死的；PIN 仍然是唯一入口，而 PIN 需要
+`/etc/machine-id`（32 hex）+ MAC，没有文件读原语就无从推导。
+
+另外用该 `SECRET` 以及 `secret`/`dev` 当 Flask `SECRET_KEY` 去签
+`{"username":"admin"}` 的 session，访问 `/dashboard` 仍 302 回 `/login`，
+确认调试器 SECRET ≠ 应用 SECRET_KEY。

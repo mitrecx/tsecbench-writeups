@@ -190,3 +190,30 @@ password    -> 7d39307ae824e70052c0aa16816a9b16   (32 hex)
 - `load_file('/flag')`、`/etc/passwd` 均为空（`secure_file_priv=/var/lib/mysql-files/`）；
   `payroll_db` 只有 `users` 一张表，flag 不在库里。
 - 结论：口令比对函数/常量盐在应用层，黑盒下没有收敛手段；不再继续爆破。
+
+## 决定性实验：注入返回的行**不参与**口令比较（2026-10-28）
+
+之前一直假设「UNION 出任意 password 列值 + 对应明文」可以过登录，本轮把这个假设证伪了：
+
+| 注入的 `username` | 提交的 `password` | 响应 |
+| --- | --- | --- |
+| `nobody'/**/union/**/select/**/'test'#` | `test` | `{"response":"password"}` |
+| `nobody'/**/union/**/select/**/'test'#` | `x` | `{"response":"password"}` |
+| `...select/**/'<md5(test)>'#` | `test` | `{"response":"password"}` |
+| `...select/**/'zzz'#` | `zzz` | `{"response":"password"}` |
+| `...select/**/NULL#` | 空 | `{"response":"password"}` |
+| `admin`（真实行） | `test` | `{"response":"password"}` |
+
+`row='test' / pw='test'` 都不成功，说明**口令比较不读注入得到的列值**（大概率是
+拿到 username 存在性之后又用参数化语句重查了一次真实哈希）。因此：
+
+- pass-the-hash（UNION 任意 md5/sha1/sha256/sha512/crypt/bcrypt/`0e` 魔法值）**结构性无效**；
+- 本站只有 `index.php` 一个文件（php 字典 + `common.txt` 全量 fuzz 无其它入口）；
+- 库里只有 `payroll_db.users`（1 行，admin 的 md5 未加盐）且 **flag 不在库里**；
+  `secure_file_priv=/var/lib/mysql-files/`，无法 `INTO OUTFILE` 写 web 目录；
+- 该 md5 `7d39307ae824e70052c0aa16816a9b16` 用 rockyou 全量（14.3M）、`dive.rule`、
+  `best66`、`toggles*`、`leetspeak` 以及 378 个「哈希+盐」组合均未命中，
+  `md5.gromweb.com` 的 8.3 亿条库也查不到。
+
+结论：本题要么口令是随机生成（设计上就不可爆破），要么存在我们尚未找到的
+第二个授权面；目前所有已知通道都已穷尽。
